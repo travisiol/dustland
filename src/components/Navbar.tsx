@@ -1,87 +1,66 @@
 "use client";
 
 import Link from "next/link";
-import { Drawer } from "@/components/Drawer";
+import { Flame } from "@/components/Flame";
 import { WalletConnect } from "@/components/WalletConnect";
-import { Label } from "@/components/ui/Label";
+import { DayCountdown } from "@/components/ui/Countdown";
+import { Label, LiveDot } from "@/components/ui/Label";
 import { siteConfig } from "@/lib/site-config";
-import { useWorld } from "@/lib/worldState";
+import { useGame } from "@/lib/gameState";
+import { count } from "@/lib/format";
 
 /*
- * The state of the world, carried in the header.
- *
- * Every chip is a real reading. They all sit at zero right now, and that is
- * the point — an honest empty board says "nothing has been taken yet" far
- * better than an invented one says anything at all.
+ * The header carries the one number that matters at every moment: how long
+ * until the day resets. Everything else on the page is about what you do
+ * before that clock hits zero.
  */
-/** The mark: a flag planted inside a parcel. The oldest lunar gesture. */
-function Mark() {
-  return (
-    <svg width="30" height="34" viewBox="0 0 30 34" aria-hidden focusable="false">
-      <path
-        d="M15 1.5 L28 9 V25 L15 32.5 L2 25 V9 Z"
-        fill="none"
-        stroke="#ff9e2c"
-        strokeWidth="2"
-      />
-      <path d="M12 10 V24" stroke="#efebe4" strokeWidth="2" />
-      <path d="M12 10.5 H21 L18.2 14 L21 17.5 H12 Z" fill="#ff9e2c" />
-    </svg>
-  );
-}
-
 export function Navbar() {
-  const { totals } = useWorld();
-
-  const chips = [
-    { key: "Plots", value: String(totals.totalPlots) },
-    {
-      key: "Claimed",
-      // 3 of 999 is 0.3%, not 0% — round to whole numbers only once there
-      // is a whole number to show.
-      value: `${totals.claimedPct > 0 && totals.claimedPct < 1 ? totals.claimedPct.toFixed(1) : totals.claimedPct.toFixed(0)}%`,
-    },
-    { key: "Owners", value: totals.owners.toLocaleString("en-US") },
-  ];
+  const { stats } = useGame();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-rule bg-void/92 backdrop-blur-sm">
-      <nav className="flex h-16 items-center gap-4 px-4 sm:px-6">
-        <Drawer />
-
-        <Link href="/" className="flex shrink-0 items-center gap-3">
-          <Mark />
-          <span className="hidden sm:block">
-            <span className="type-title block leading-none text-chalk">
-              {siteConfig.name}
-            </span>
-            <span className="type-label mt-1 block text-signal">
-              999 parcels. All equal.
-            </span>
-          </span>
+    <header className="sticky top-0 z-50 border-b border-line bg-paper/90 backdrop-blur-md">
+      <nav className="mx-auto flex h-16 max-w-[1440px] items-center gap-6 px-4 sm:px-6 lg:px-10">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5 text-ink">
+          <Flame size={26} className="text-ember" />
+          <span className="type-title tracking-tight">{siteConfig.name}</span>
         </Link>
 
-        <ul className="hidden items-center gap-5 lg:flex">
-          {chips.map((chip) => (
-            <li key={chip.key} className="flex items-baseline gap-2">
-              <Label className="text-chalk-muted">{chip.key}</Label>
-              <span className="type-data text-chalk">{chip.value}</span>
-            </li>
-          ))}
+        <div className="hidden items-center gap-3 md:flex">
+          <LiveDot />
+          <Label>Day resets in</Label>
+          <DayCountdown className="text-ink" />
+          <Label className="hidden lg:inline">UTC</Label>
+        </div>
+
+        <ul className="ml-auto hidden items-center gap-6 lg:flex">
           <li className="flex items-baseline gap-2">
-            <Label className="text-chalk-muted">Token</Label>
-            <span className="type-data text-signal">$DUST</span>
+            <Label>Alive</Label>
+            <span className="type-data text-ink">{count(stats.alive)}</span>
+          </li>
+          <li className="flex items-baseline gap-2">
+            <Label>Longest</Label>
+            <span className="type-data text-ink">{count(stats.longest)}</span>
+          </li>
+          <li>
+            <a
+              href="#how"
+              className="type-label text-ink-soft transition-colors hover:text-ember"
+            >
+              How it works
+            </a>
+          </li>
+          <li>
+            <a
+              href="#board"
+              className="type-label text-ink-soft transition-colors hover:text-ember"
+            >
+              Board
+            </a>
           </li>
         </ul>
 
-        <div className="ml-auto flex items-center gap-3">
-          <a
-            href="#how"
-            className="type-label hidden text-chalk-soft transition-colors duration-150 hover:text-signal md:inline"
-          >
-            How it works
-          </a>
-          <WalletConnect />
+        <div className="ml-auto lg:ml-0">
+          <WalletConnect hint={false} />
         </div>
       </nav>
     </header>

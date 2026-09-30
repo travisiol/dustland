@@ -1,52 +1,58 @@
+/*
+ * One string renames the product everywhere: metadata, nav, wall, OG image,
+ * footer. The env prefix stays NEXT_PUBLIC_STREAK_* regardless.
+ */
 export const siteConfig = {
-  // Placeholder name — not final. Swapping this one string renames the site
-  // everywhere: metadata, nav, OG image, footer.
-  name: "DUSTLAND",
-  tagline: "The Moon, in 999 parcels.",
+  name: "STREAK",
+  tagline: "Show up every day.",
   description:
-    "Buy shares of lunar ground. The surface is cut into 999 equal parcels, and every parcel has its own token, its own market and its own economy.",
+    "One on-chain check-in a day keeps your streak alive. Miss one and it dies, and everything you put in stays in the pot. Every week the pot pays whoever is still standing.",
   seoDescription:
-    "One body, 999 equal parcels. Every parcel of the Moon has its own token and its own holders.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://dustland.example",
-  x: process.env.NEXT_PUBLIC_DUSTLAND_X ?? null,
-  discord: process.env.NEXT_PUBLIC_DUSTLAND_DISCORD ?? null,
+    "A daily on-chain streak game. Check in once a day. Miss one, lose it all. The pot pays whoever is still standing.",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://streak.example",
+  x: envOrNull(process.env.NEXT_PUBLIC_STREAK_X),
+  discord: envOrNull(process.env.NEXT_PUBLIC_STREAK_DISCORD),
+  telegram: envOrNull(process.env.NEXT_PUBLIC_STREAK_TELEGRAM),
 } as const;
 
 function envOrNull(value: string | undefined): string | null {
-  return value && value.trim().length > 0 ? value : null;
+  return value && value.trim().length > 0 ? value.trim() : null;
 }
 
-function envInt(value: string | undefined, fallback: number): number {
-  const parsed = Number.parseInt(value ?? "", 10);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
-}
-
-export const world = {
-  totalParcels: 999,
-  /**
-   * Claims shown before a contract exists. Ignored the moment
-   * NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS is set — from then on the map is
-   * drawn from the chain's own claim bitmap.
-   */
-  placeholderClaims: envInt(process.env.NEXT_PUBLIC_DUSTLAND_PLACEHOLDER_CLAIMS, 3),
-  maxPerWallet: envInt(process.env.NEXT_PUBLIC_DUSTLAND_MAX_PER_WALLET, 5),
+/**
+ * The rules, as constants, so the copy and the contract can never disagree
+ * about them. Change a number here and every sentence that quotes it
+ * follows.
+ */
+export const rules = {
+  /** Days between payouts. The pot is split every N days at 00:00 UTC. */
+  payoutEveryDays: 7,
+  /** Weekday of the payout, 0 = Sunday, in UTC. */
+  payoutWeekday: 0,
+  /** Rows shown on the board. */
+  boardSize: 10,
+  /** Days across the wall. 7 rows × this many columns. */
+  wallWeeks: 16,
 } as const;
 
 /**
- * Claim surface. The address and price are env-driven so no placeholder
- * address or invented price can ship hardcoded; with the address unset the
- * whole claim UI sits in PREVIEW and the button is disabled.
+ * Contract surface. Address and entry are env-driven so no placeholder
+ * address or invented price can ship hardcoded. With the address unset the
+ * whole game sits in pre-launch: every figure is a real zero and the
+ * check-in button is disabled and says why.
  */
-export const claimConfig = {
+export const gameConfig = {
   contractAddress: envOrNull(
-    process.env.NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS,
+    process.env.NEXT_PUBLIC_STREAK_CONTRACT_ADDRESS,
   ) as `0x${string}` | null,
-  /** Price per parcel in ETH as a decimal string, e.g. "0.04". */
-  priceEth: envOrNull(process.env.NEXT_PUBLIC_DUSTLAND_PRICE_ETH),
-  isLive: process.env.NEXT_PUBLIC_DUSTLAND_LIVE === "true",
+  /** Entry per check-in in ETH as a decimal string, e.g. "0.001". */
+  entryEth: envOrNull(process.env.NEXT_PUBLIC_STREAK_ENTRY_ETH),
+  isLive: process.env.NEXT_PUBLIC_STREAK_LIVE === "true",
+  /** How often the page re-reads the chain, in ms. */
+  pollMs: 20_000,
 } as const;
 
-export const canClaim =
-  claimConfig.isLive &&
-  claimConfig.contractAddress !== null &&
-  claimConfig.priceEth !== null;
+export const isLive =
+  gameConfig.isLive &&
+  gameConfig.contractAddress !== null &&
+  gameConfig.entryEth !== null;

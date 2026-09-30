@@ -1,49 +1,35 @@
-"use client";
-
-import { useWorld } from "@/lib/worldState";
-
 /*
- * The genesis strip.
- *
- * At launch this carries the state of the world in plain sentences; once
- * plots start trading the same strip is where real events land. Right now
- * the emptiness is the message — every line is true, and an untouched map
- * is a better pitch than any invented volume figure.
+ * The rules, one sentence each, scrolling past. Every line is true today,
+ * which is why none of them carries a number that is not a rule.
  */
+const lines = [
+  "One check-in a day, before 00:00 UTC",
+  "Miss a day and the streak dies",
+  "What you put in stays in the pot",
+  "The pot pays every week to whoever is still alive",
+  "Day 100 earns a hundred shares, day 1 earns one",
+  "No streak freezes, no repairs, no second chances",
+  "Every wallet is its own streak",
+];
+
 export function Ticker() {
-  const { totals } = useWorld();
-
-  const lines = [
-    "Live preview — a map a few days old",
-    `${totals.livePlots} plots opened, ${totals.totalPlots - totals.livePlots} still untouched`,
-    "501 parcels face Earth, 498 never have",
-    `${totals.owners} wallets in so far`,
-    "Mint marks the plot with the most owners",
-    "Every plot is 37,970 km² of ground, all of them equal",
-    "Every plot is its own token and its own market",
-    "Trading fees are split between a plot's holders",
-  ];
-
   return (
-    <div className="flex items-stretch border-t border-rule bg-void">
-      <span className="flex shrink-0 items-center gap-2 border-r border-rule px-4 py-2.5">
-        <span className="h-2 w-2 bg-signal" />
-        <span className="type-label text-signal">Live preview</span>
+    <div className="flex items-stretch border-y border-line bg-ink text-paper">
+      <span className="type-label flex shrink-0 items-center gap-2 border-r border-slab-line px-4 py-3 text-ember-hot">
+        The rules
       </span>
-
       <div className="relative flex-1 overflow-hidden">
         <div className="flex w-max animate-ticker">
-          {/* Two copies so the loop has something to scroll into. */}
           {[0, 1].map((copy) => (
             <ul key={copy} className="flex shrink-0" aria-hidden={copy === 1}>
               {lines.map((line) => (
                 <li
                   key={line}
-                  className="flex items-center gap-4 whitespace-nowrap px-6 py-2.5"
+                  className="flex items-center gap-5 whitespace-nowrap px-6 py-3"
                 >
-                  <span className="type-data text-chalk-soft">{line}</span>
-                  <span aria-hidden className="text-signal/50">
-                    ·
+                  <span className="type-data text-paper/80">{line}</span>
+                  <span aria-hidden className="text-ember">
+                    ●
                   </span>
                 </li>
               ))}
@@ -51,12 +37,6 @@ export function Ticker() {
           ))}
         </div>
       </div>
-
-      <span className="hidden shrink-0 items-center border-l border-rule px-4 py-2.5 sm:flex">
-        <span className="type-label text-chalk-muted">
-          {totals.livePlots} / {totals.totalPlots} taken
-        </span>
-      </span>
     </div>
   );
 }

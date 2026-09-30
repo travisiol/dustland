@@ -1,7 +1,7 @@
 import { clsx } from "clsx";
 import type { ReactNode } from "react";
 
-/** A key on the sheet: mono, tracked out, uppercase. */
+/** A key on the ledger: mono, tracked out, uppercase. */
 export function Label({
   children,
   className,
@@ -10,27 +10,34 @@ export function Label({
   className?: string;
 }) {
   return (
-    <span className={clsx("type-label text-chalk-muted", className)}>
+    <span className={clsx("type-label text-ink-muted", className)}>
       {children}
     </span>
   );
 }
 
 /**
- * Marks the sheet as pre-launch. The figures beside it are a seeded
- * starting state, not readings off the chain — the tag is what keeps the
- * claim count from asserting activity that has not happened yet.
+ * Marks a figure as pre-launch. Everything beside it is a real zero, not a
+ * reading off the chain, and the stamp is what keeps a zero from looking
+ * like a failure.
  */
-export function PreviewTag({ className }: { className?: string }) {
+export function PreLaunchStamp({ className }: { className?: string }) {
   return (
-    <span
-      className={clsx(
-        "type-label inline-flex items-center gap-1.5 border border-signal/40 bg-signal/10 px-2 py-1 text-signal",
-        className,
-      )}
-    >
-      <span className="h-1.5 w-1.5 bg-signal" />
+    <span className={clsx("stamp type-label inline-block text-ember", className)}>
       Pre-launch
     </span>
+  );
+}
+
+/** A live dot. Only ever ember, only ever next to a live reading. */
+export function LiveDot({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={clsx(
+        "pulse inline-block h-2 w-2 rounded-full bg-ember",
+        className,
+      )}
+    />
   );
 }

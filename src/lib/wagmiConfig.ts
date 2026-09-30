@@ -1,11 +1,11 @@
 import { createConfig, http, injected } from "wagmi";
-import { robinhoodChain } from "@/lib/chain";
+import { gameChain } from "@/lib/chain";
 
 export const wagmiConfig = createConfig({
-  chains: [robinhoodChain],
+  chains: [gameChain],
   connectors: [injected()],
   transports: {
-    [robinhoodChain.id]: http(),
+    [gameChain.id]: http(),
   },
   ssr: true,
 });

@@ -1,221 +1,257 @@
 @import "tailwindcss";
 
 /*
- * DUSTLAND — 999 equal parcels of the Moon.
+ * STREAK — show up every day.
  *
- * Read as a surface readout, not a poster. The ground is vacuum black and
- * warm regolith grey — the Moon is not blue, and nothing here should be —
- * with amber reserved for value: a plot only takes colour once it has a
- * market, and the busiest plots carry a halo. That reservation is the whole
- * system. On a field of 999 identical hexagons, amber has to mean activity
- * or it means nothing.
+ * Art direction: a ledger, not a dashboard. The page is warm paper — the
+ * kind you would keep a tally on — set in a wide, characterful grotesk with
+ * an italic serif for the one line that matters. Colour is a single hot
+ * ember, and it only appears where a streak is alive: on the wall, on the
+ * check-in button, on a live number. Everything that is not alive is ink.
  *
- * There is no display face. Everything loud is set in mono, tracked out and
- * stencilled, the way a designation is painted on a hull; everything quiet
- * is IBM Plex. A heavy poster font would make this a brand for a world with
- * no weather, no colour and no air — the type should sound like the
- * instrument, not the advertisement.
+ * The one dark object on the page is the wall: a slab of charcoal where the
+ * days are laid out as a grid and the streak burns across it. Paper around
+ * it, fire inside it. That contrast is the whole identity.
  */
 :root {
-  --vacuum: #07080a;
-  --regolith: #131417;
-  --regolith-raised: #1b1d21;
-  --regolith-line: #292c31;
+  --paper: #f4efe6;
+  --paper-deep: #ebe4d5;
+  --paper-line: rgba(21, 18, 14, 0.12);
+  --paper-line-strong: rgba(21, 18, 14, 0.28);
 
-  --chalk: #efebe4;
-  --chalk-soft: #ada79e;
-  --chalk-muted: #7e7a73;
+  --ink: #15120e;
+  --ink-soft: #524a3f;
+  --ink-muted: #8a8172;
 
-  --signal: #ff9e2c;
-  --signal-bright: #ffc46b;
-  --signal-deep: #a85f04;
+  --slab: #15120e;
+  --slab-raised: #1f1a15;
+  --slab-line: rgba(244, 239, 230, 0.1);
+  --slab-cell: #262119;
 
-  --rule: rgba(220, 214, 205, 0.13);
-  --rule-strong: rgba(220, 214, 205, 0.28);
+  --ember: #ff4b1f;
+  --ember-hot: #ffb340;
+  --ember-white: #fff3da;
+  --ember-deep: #b7280a;
 
-  --gain: #5bd6a0;
-  --loss: #e2604a;
-
-  /* Ownership segments. Amber is always you; the greys are everyone else,
-     so the bar reads at a glance as "my slice against the rest". */
-  --holder-near: #5a6473;
-  --holder-far: #8e97a6;
+  --gain: #1f8a5b;
+  --loss: #c2321b;
 }
 
 @theme inline {
-  --color-void: var(--vacuum);
-  --color-field: var(--regolith);
-  --color-field-raised: var(--regolith-raised);
-  --color-field-line: var(--regolith-line);
-  --color-chalk: var(--chalk);
-  --color-chalk-soft: var(--chalk-soft);
-  --color-chalk-muted: var(--chalk-muted);
-  --color-signal: var(--signal);
-  --color-signal-bright: var(--signal-bright);
-  --color-signal-deep: var(--signal-deep);
-  --color-rule: var(--rule);
-  --color-rule-strong: var(--rule-strong);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-line: var(--paper-line);
+  --color-line-strong: var(--paper-line-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-slab: var(--slab);
+  --color-slab-raised: var(--slab-raised);
+  --color-slab-line: var(--slab-line);
+  --color-slab-cell: var(--slab-cell);
+  --color-ember: var(--ember);
+  --color-ember-hot: var(--ember-hot);
+  --color-ember-white: var(--ember-white);
+  --color-ember-deep: var(--ember-deep);
   --color-gain: var(--gain);
   --color-loss: var(--loss);
-  --color-holder-near: var(--holder-near);
-  --color-holder-far: var(--holder-far);
 
   --font-display:
-    "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --font-mono:
-    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    "Bricolage Grotesque", "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-sans:
-    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    "Instrument Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 html {
   scroll-behavior: smooth;
-  background: var(--vacuum);
+  background: var(--paper);
 }
 
 body {
-  background: var(--vacuum);
-  color: var(--chalk);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: var(--signal);
-  color: var(--vacuum);
+  background: var(--ember);
+  color: var(--ember-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 3px;
 }
 
 /* ---- Type ------------------------------------------------------------- */
 
 /*
- * Sized against its own column, not the viewport. The wordmark sits in a
- * fixed rail on desktop and full width when the layout stacks, so a vw
- * clamp gets it wrong in one of those two places every time.
+ * The headline. Bricolage at its widest optical size, tight, with the
+ * italic serif reserved for the one phrase the whole product is about.
  */
-.pitch {
-  container-type: inline-size;
-}
-
 .type-hero {
   font-family: var(--font-display);
-  font-weight: 700;
-  /* Mono is wide and this is tracked out on top, so it needs a lower
-     ceiling than a condensed poster face would want. */
-  font-size: clamp(28px, 10.5cqw, 66px);
-  line-height: 1;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-size: clamp(44px, 8.2vw, 116px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
 }
 
-/*
- * The wordmark as a designation stencilled on a panel: rules above and
- * below, and the trailing letter-space pushed back so the tracking does not
- * shift the word off its own left margin.
- */
-.wordmark-stencil {
-  display: block;
-  padding: 0.3em 0 0.26em;
-  border-top: 1px solid var(--rule-strong);
-  border-bottom: 1px solid var(--rule-strong);
-  text-indent: 0.16em;
+.type-hero-accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ember);
 }
 
 .type-display {
   font-family: var(--font-display);
+  font-optical-sizing: auto;
   font-weight: 700;
-  font-size: clamp(17px, 2.1vw, 26px);
-  line-height: 1.15;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: clamp(30px, 4vw, 52px);
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .type-title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(14px, 1.5vw, 18px);
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* Numbers. Always mono, always tabular — this is a market surface. */
-.type-figure {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.type-figure-sm {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-
-.type-label {
-  font-family: var(--font-mono);
-  font-weight: 400;
-  font-size: 10px;
-  line-height: 1.1;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.type-data {
-  font-family: var(--font-mono);
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 1.45;
-  font-variant-numeric: tabular-nums;
+  font-size: clamp(18px, 1.6vw, 22px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
 }
 
 .type-body {
   font-family: var(--font-sans);
   font-weight: 400;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
+}
+
+.type-lead {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.5;
+}
+
+/* Keys on the ledger: mono, small, tracked out, uppercase. */
+.type-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1.1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Numbers. Always mono, always tabular: this is a ledger. */
+.type-data {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-figure {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(34px, 3.6vw, 52px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-day {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(64px, 9vw, 128px);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-clock {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(14px, 1.2vw, 16px);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---- Surface ---------------------------------------------------------- */
 
-/*
- * Scanlines. Two pixels, barely there — enough that a panel reads as
- * something being displayed rather than something being printed, which is
- * the whole distance between this and a drafting sheet.
- */
-.raster {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(220, 214, 205, 0.035) 0px,
-    rgba(220, 214, 205, 0.035) 1px,
-    transparent 1px,
-    transparent 3px
-  );
+/* Paper grain — a whisper of tooth so the page reads as stock, not #fff. */
+.paper-grain {
+  background-image:
+    radial-gradient(rgba(21, 18, 14, 0.055) 0.6px, transparent 0.6px),
+    radial-gradient(rgba(21, 18, 14, 0.035) 0.5px, transparent 0.5px);
+  background-size:
+    7px 7px,
+    11px 11px;
+  background-position:
+    0 0,
+    3px 5px;
 }
 
-/* Regolith grain, used sparingly and never behind small text. */
-.grain {
-  background-image: radial-gradient(
-    rgba(220, 214, 205, 0.22) 0.5px,
-    transparent 0.5px
-  );
-  background-size: 5px 5px;
+/* The slab: charcoal, slightly rounded, with a hairline of light on top. */
+.slab {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 30%),
+    var(--slab);
+  border: 1px solid rgba(21, 18, 14, 0.7);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 30px 60px -30px rgba(21, 18, 14, 0.55),
+    0 12px 24px -16px rgba(21, 18, 14, 0.5);
 }
 
-.panel {
-  background: var(--regolith);
-  border: 1px solid var(--rule);
+/* A cell on the wall. Colour and glow are set inline per day. */
+.cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--slab-cell);
+  transition:
+    background-color 420ms ease,
+    box-shadow 420ms ease,
+    transform 420ms ease;
 }
 
-:focus-visible {
-  outline: 2px solid var(--signal);
-  outline-offset: 2px;
+.cell-today {
+  outline: 1px solid rgba(255, 243, 218, 0.35);
+  outline-offset: 1px;
 }
 
-/* Genesis ticker. Duplicated content scrolls one full copy, then loops. */
+/* Ember pulse on the live day cell and the check-in button. */
+@keyframes ember-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 75, 31, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 75, 31, 0);
+  }
+}
+
+.pulse {
+  animation: ember-pulse 2.4s ease-out infinite;
+}
+
+/* Underline that is a stroke of ember, drawn rather than set. */
+.rule-ember {
+  background: linear-gradient(90deg, var(--ember), var(--ember-hot));
+  height: 3px;
+}
+
+/* Ticker: two copies scroll one full width, then loop. */
 @keyframes ticker {
   from {
     transform: translateX(0);
@@ -226,7 +262,15 @@ body {
 }
 
 .animate-ticker {
-  animation: ticker 42s linear infinite;
+  animation: ticker 48s linear infinite;
+}
+
+/* A stamped tag, like a rubber stamp on the ledger. */
+.stamp {
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  padding: 5px 8px;
+  transform: rotate(-2deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -234,7 +278,12 @@ body {
     scroll-behavior: auto;
   }
 
-  .animate-ticker {
+  .animate-ticker,
+  .pulse {
     animation: none;
+  }
+
+  .cell {
+    transition: none;
   }
 }

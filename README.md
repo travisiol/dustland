@@ -1,114 +1,65 @@
-# DUSTLAND
+# STREAK
 
-The Moon's surface cut into 999 equal parcels. Claim one on the map.
+Show up every day. One on-chain check-in a day keeps your streak alive; miss
+one and it dies, and everything you put in stays in the pot. Every week the
+pot pays whoever is still standing, weighted by how long they have lasted.
 
-Forked from PLOTLAND, which does the same thing to Earth. The pipeline is the
-same — equal-area hexagons generated offline, one canvas globe, one packed
-bitmap read from the chain — but the body, the data and the art direction are
-not.
+This is a ground-up rebuild of the idea behind streak.fun with its own art
+direction, copy and mechanics. The original site could not be reached from
+the environment this was built in, so the rules below are this project's
+own, chosen to be the simplest honest version of "a daily streak with money
+on it". Every number in them lives in `src/lib/site-config.ts`; change it
+there and the copy follows.
 
-`DUSTLAND` is one string in `src/lib/site-config.ts` plus the
-`NEXT_PUBLIC_DUSTLAND_*` env prefix, so renaming is a two-line change.
+The previous project in this repository, DUSTLAND, is kept untouched in
+`legacy/` and excluded from the build.
 
 ## Stack
 
-Next.js 16 (App Router, Turbopack) · React 19 · Tailwind v4 · wagmi v3 + viem ·
-TypeScript. Injected wallets only, Robinhood Chain, no backend.
+Next.js 16 (App Router, Turbopack) · React 19 · Tailwind v4 · wagmi v3 + viem
+· TypeScript. Injected wallets only, Base by default, no backend.
 
-## The map is the product
+## The game
 
-`src/components/Globe.tsx` draws the body and all 999 hex parcels on a canvas,
-and colours only the ground that has a market. It is the artwork, the proof of
-scarcity and the claim counter at once, which is why it is the only place on
-the page allowed to use colour.
-
-Geometry is generated once and committed — nothing is fetched at build or run
-time:
-
-```bash
-python scripts/build-parcels.py
-```
-
-That writes `src/data/parcels.json` and `src/data/maria.json`. It needs no
-input files: the surface is masked by the projection's own boundary, and the
-named regions come from a catalogue transcribed into the script.
-
-**Why an equal-area projection.** Parcels have to be genuinely equal or "one
-parcel" means nothing. The grid is laid in Equal Earth, which is equal-area, so
-every hexagon covers the same 37,970 km² of ground. On a lat/lon grid a parcel
-at Peary would quietly be worth a fraction of one at Tranquillitatis. The
-projection is named for the wrong world; the maths only cares that the body is
-a sphere.
-
-**How it lands on exactly 999.** A binary search on the hex radius finds the
-smallest lattice with at least 999 on-map cells, then the overshoot is dropped
-lowest-coverage first — which shaves slivers at the ±180° limb rather than
-punching holes in the middle. Parcels are numbered north to south.
-
-The counts that fall out of this are facts about area, not editorial choices:
-
-| | |
-| --- | --- |
-| Oceanus Procellarum | 103 parcels |
-| South Pole-Aitken Basin | 120 parcels |
-| Mare Imbrium | 25 parcels |
-| Nearside / farside | 501 / 498 |
-| Basalt / highland | 236 / 763 |
-| Named regions | 47 |
-
-**Landing sites.** Eighteen parcels contain a place something has actually
-landed or impacted, from Luna 2 in 1959 to Chang'e 6 in 2024, and each one
-falls in a different parcel. Apollo 11 is parcel 522, in Mare Tranquillitatis.
-This is the one thing a lunar grid has that a terrestrial one does not, and it
-is a matter of record rather than an invention.
-
-**What the geometry approximates.** Region extents are the catalogued
-diameters, modelled as circles except where `MINOR_AXIS_KM` gives a second
-axis. That puts 236 parcels on basalt, about 23% of the surface, where the
-published figure for the maria is nearer 16% — the overshoot is the circles,
-which circumscribe irregular plains rather than matching them. Every named
-region is in the right place and at roughly the right size; the basalt edges
-are generous by a parcel or two. Fixing it properly means the USGS Unified
-Geologic Map of the Moon, which is a download and a shapefile dependency this
-build does not have.
+1. **One check-in per UTC day.** The day rolls over at 00:00 UTC everywhere.
+2. **Every check-in costs the entry fee**, fixed by the contract, all of it
+   into the pot.
+3. **Miss a day and the streak dies.** A streak is alive if its last
+   check-in was today or yesterday. A dead streak's stake stays in the pot.
+4. **The pot pays every 7 days**, Sunday 00:00 UTC, split across every live
+   streak in proportion to its length. Day 100 earns a hundred shares; day 1
+   earns one. Payouts are claimable on-chain.
+5. **Streaks keep going after a payout.**
+6. **No freezes, no repairs, no refunds.**
 
 ## The contract this page expects
 
-The ABI in `src/lib/dustlandAbi.ts` is specced around the map rather than the
-other way round:
+`src/lib/streakAbi.ts` is specced from the page rather than the other way
+round: every read is one call the UI makes.
 
 | Function | Why |
 | --- | --- |
-| `claim(uint256 parcelId) payable` | Claiming is by id, so you take the ground you picked rather than whatever the next mint hands you. |
-| `claimedBitmap() view returns (uint256[4])` | The map needs all 999 states every time it draws. 999 bits pack into four words, so that is one view call instead of 999 `ownerOf` lookups or an indexer. Bit *n* of word *n >> 8* is parcel *n + 1*. |
-| `totalSupply() view returns (uint256)` | Claim count. |
+| `checkIn() payable` | The one write. `msg.value` must equal `entryFee()`. |
+| `entryFee() view returns (uint256)` | Shown on the button before you sign. |
+| `currentDay() view returns (uint256)` | `block.timestamp / 86400`. The page computes the same number locally. |
+| `streakOf(address) view returns (uint256 length, uint256 lastDay, uint256 staked)` | Your wall, your status, your stake at risk. |
+| `stats() view returns (uint256 alive, uint256 longest, uint256 pot, uint256 brokenToday)` | The four readings in the stats strip, one call. |
+| `leaderboard(uint256 n) view returns (address[], uint256[])` | The board, longest first. |
 
 If the deployed contract names these differently, that one file is the only
 thing to change.
-
-## What is actually being sold
-
-Nobody can own lunar land. The 1967 Outer Space Treaty bars any nation from
-claiming the Moon, so there is no sovereign to issue title and no registry on
-Earth that recognises one. What a buyer gets is a token in this grid: a claim
-on a numbered parcel of this map, and a share of that parcel's market. It is
-not a deed. The FAQ says so in the first answer, before anything else on the
-page, and that ordering is deliberate.
 
 ## Pre-launch state
 
 The site ships before the contract does, so it runs entirely on env vars:
 
-- Every figure on the page is a real zero. No market has been opened, so the
-  map is an empty outline and says so.
-- Wallets connect. There is no contract to call yet, so the claim button stays
-  disabled and says so rather than looking live and doing nothing.
-- Everything flips automatically once `NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS`,
-  `NEXT_PUBLIC_DUSTLAND_PRICE_ETH` and `NEXT_PUBLIC_DUSTLAND_LIVE=true` exist.
-  No code change.
-- No yield rate, holder count, floor, valuation or launch date appears
-  anywhere. None of it is decided, and inventing a figure here is the one thing
-  on this page a holder could actually be hurt by.
+- Every figure on the page is a real zero and is stamped **Pre-launch**.
+- The wall in the hero plays a labelled illustration of a streak climbing to
+  31 and dying. Once live and connected it draws your own.
+- Wallets connect. The check-in button is disabled and says why.
+- Everything flips automatically once `NEXT_PUBLIC_STREAK_CONTRACT_ADDRESS`,
+  `NEXT_PUBLIC_STREAK_ENTRY_ETH` and `NEXT_PUBLIC_STREAK_LIVE=true` exist.
+- No holder count, APY, valuation or launch date is invented anywhere.
 
 ## Setup
 
@@ -120,48 +71,34 @@ npm run dev
 
 ## Going live
 
-1. Deploy a contract exposing the three functions above.
-2. Set `NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS`,
-   `NEXT_PUBLIC_DUSTLAND_PRICE_ETH` and `NEXT_PUBLIC_DUSTLAND_LIVE=true`.
-3. Set `NEXT_PUBLIC_MAINNET_RPC_URL` to a private endpoint — the public RPC
-   will rate-limit under real traffic, and the map polls the bitmap every 20
-   seconds.
-4. Set `NEXT_PUBLIC_SITE_URL` so metadata, `sitemap.xml` and `robots.txt` point
-   at the real domain.
-5. Re-verify the region catalogue in `scripts/build-parcels.py` against the
-   official IAU gazetteer before any of these names settle on-chain.
+1. Deploy a contract exposing the functions above.
+2. Set `NEXT_PUBLIC_STREAK_CONTRACT_ADDRESS`, `NEXT_PUBLIC_STREAK_ENTRY_ETH`
+   and `NEXT_PUBLIC_STREAK_LIVE=true`.
+3. Pick the chain with `NEXT_PUBLIC_STREAK_CHAIN_ID` (8453 Base, 84532 Base
+   Sepolia, 1 mainnet) and set `NEXT_PUBLIC_STREAK_RPC_URL` to a private
+   endpoint: the page polls every 20 seconds.
+4. Set `NEXT_PUBLIC_SITE_URL` so metadata, `sitemap.xml` and `robots.txt`
+   point at the real domain.
 
 Social links stay hidden until their env vars are set, so no dead link ships.
 
-Robinhood Chain network details in `src/lib/chain.ts` (chain id, RPC, explorer)
-are unverified third-party research and must be re-confirmed against
-`docs.robinhood.com/chain` before mainnet use.
-
 ## Art direction
 
-A surface readout. Vacuum black and warm regolith grey — the Moon is not blue
-and nothing here is — with one amber signal reserved for value. Amber appears
-only where a market exists; on a field of 999 identical hexagons, colour has to
-mean activity or it means nothing.
+A ledger, not a dashboard. The page is warm paper, the kind you keep a tally
+on, set in Bricolage Grotesque with an Instrument Serif italic reserved for
+the one line the product is about. Colour is a single hot ember and it only
+appears where a streak is alive: on the wall, on the check-in button, on a
+live number. Everything that is not alive is ink.
 
-There is no display face. Everything loud is set in mono, tracked out and
-stencilled the way a designation is painted on a hull; everything quiet is IBM
-Plex. A heavy poster font would be a brand for a world with no weather, no
-colour and no air.
+The one dark object on the page is **the wall**: a charcoal slab where the
+days are laid out seven rows deep, one column per week, today bottom-right.
+A streak is the run of lit cells ending at today, and heat runs along it,
+cooled red at the start and near-white at the end, so the length of a streak
+reads as a temperature before it reads as a number. Paper around it, fire
+inside it: that contrast is the whole identity.
 
-The globe has no atmospheric halo, because the body has no atmosphere — an
-airless disc has a hard edge against the sky, and the glow that sells a planet
-is exactly what would make this one wrong. The Moon's face is not a texture: it
-is drawn by the parcels themselves, each depth band laid down twice, once for
-basalt and once for highland, so the nearside becomes recognisable out of the
-grid that is being sold.
-
-## Attribution
-
-Region and landing-site coordinates from the
-[IAU/USGS Gazetteer of Planetary Nomenclature](https://planetarynames.wr.usgs.gov/),
-public domain, transcribed rather than fetched. Projection: Equal Earth
-(Šavrič, Patterson & Jenny, 2018). Lunar radius 1737.4 km (IAU).
+Fonts load from a runtime `<link>` rather than `next/font`, so the build
+needs no outbound network.
 
 ## Verification
 
