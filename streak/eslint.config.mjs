@@ -12,8 +12,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // DUSTLAND, the project this repo was reforged from. Kept for reference.
-    "legacy/**",
   ]),
 ]);
 
