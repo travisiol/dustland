@@ -2,31 +2,42 @@
 
 import { useEffect, useState } from "react";
 import { useConnect, useConnection, useDisconnect, useSwitchChain } from "wagmi";
-import { clsx } from "clsx";
 import { robinhoodChain } from "@/lib/chain";
-import { shortAddress } from "@/lib/format";
+import { clsx } from "clsx";
+
+function short(address: string) {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
 
 /**
  * Whether a wallet is actually reachable in this browser.
  *
  * wagmi always registers the injected connector whether or not anything is
- * there to inject, so its presence says nothing. This looks for a real
- * provider instead: `window.ethereum` for older wallets and the EIP-6963
- * announcement that current ones use. Starts optimistic so the server
- * render and the first client render agree, then corrects itself.
+ * there to inject, so its presence says nothing — checking it left the
+ * button enabled on a machine with no wallet, where clicking it did
+ * nothing at all. This looks for a real provider instead: `window.ethereum`
+ * for older wallets, and the EIP-6963 announcement that current ones use.
+ *
+ * Starts optimistic so the server render and the first client render agree,
+ * then corrects itself once the browser has had a moment to answer.
  */
 function useWalletAvailable(): boolean {
   const [available, setAvailable] = useState(true);
 
   useEffect(() => {
     let found = typeof window !== "undefined" && "ethereum" in window;
+
     const onAnnounce = () => {
       found = true;
       setAvailable(true);
     };
     window.addEventListener("eip6963:announceProvider", onAnnounce);
     window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+    // Wallets answer the request synchronously in practice; the delay is
+    // for the ones that do it on the next tick.
     const timer = window.setTimeout(() => setAvailable(found), 400);
+
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener("eip6963:announceProvider", onAnnounce);
@@ -39,20 +50,23 @@ function useWalletAvailable(): boolean {
 export function WalletConnect({
   className,
   wrapperClassName,
-  hint = true,
 }: {
   className?: string;
+  /** Lets a caller stretch the control, e.g. full width inside a panel. */
   wrapperClassName?: string;
-  /** Show the "install a wallet" line under the button. Off in the header, where there is no room. */
-  hint?: boolean;
 }) {
   const { address, isConnected, chainId } = useConnection();
-  const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
+  const {
+    connect,
+    connectors,
+    isPending: isConnecting,
+    error: connectError,
+  } = useConnect();
   const { disconnect } = useDisconnect();
   const { mutate: switchChain, isPending: isSwitching } = useSwitchChain();
   const walletAvailable = useWalletAvailable();
 
-  const shell = "type-label px-3.5 py-2.5 transition-colors duration-150";
+  const shell = "type-label px-3 py-2 transition-colors duration-150";
 
   if (isConnected && address) {
     if (chainId !== robinhoodChain.id) {
@@ -61,7 +75,11 @@ export function WalletConnect({
           type="button"
           onClick={() => switchChain({ chainId: robinhoodChain.id })}
           disabled={isSwitching}
-          className={clsx(shell, "bg-seal text-paper hover:bg-seal-deep", className)}
+          className={clsx(
+            shell,
+            "bg-signal text-void hover:bg-signal-bright",
+            className,
+          )}
         >
           {isSwitching ? "Switching…" : "Switch to Robinhood Chain"}
         </button>
@@ -74,12 +92,12 @@ export function WalletConnect({
         title="Disconnect wallet"
         className={clsx(
           shell,
-          "flex items-center gap-2 text-ink ring-1 ring-rule-strong ring-inset hover:bg-ink hover:text-paper",
+          "flex items-center gap-2 text-chalk ring-1 ring-rule-strong ring-inset hover:bg-chalk hover:text-void",
           className,
         )}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-up" />
-        {shortAddress(address)}
+        <span className="h-1.5 w-1.5 bg-signal" />
+        {short(address)}
       </button>
     );
   }
@@ -93,22 +111,30 @@ export function WalletConnect({
         type="button"
         disabled={!canConnect || isConnecting}
         onClick={() => connector && connect({ connector })}
-        title={canConnect ? undefined : "No browser wallet detected on this device"}
+        title={
+          canConnect ? undefined : "No browser wallet detected on this device"
+        }
         className={clsx(
           shell,
-          "bg-ink text-paper hover:bg-ink-soft disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ink-muted disabled:ring-1 disabled:ring-rule-strong disabled:ring-inset",
+          "bg-signal text-void hover:bg-signal-bright disabled:cursor-not-allowed disabled:bg-transparent disabled:text-chalk-muted disabled:ring-1 disabled:ring-rule-strong disabled:ring-inset",
           className,
         )}
       >
-        {isConnecting ? "Connecting…" : canConnect ? "Connect wallet" : "No wallet found"}
+        {isConnecting
+          ? "Connecting…"
+          : canConnect
+            ? "Connect wallet"
+            : "No wallet found"}
       </button>
+
+      {/* A refused or failed connection used to end in silence. */}
       {connectError && (
-        <span className="type-small max-w-[240px] text-down">
+        <span className="type-data max-w-[240px] text-loss">
           {connectError.message.split("\n")[0]}
         </span>
       )}
-      {hint && !canConnect && !connectError && (
-        <span className="type-small max-w-[240px] text-ink-muted">
+      {!canConnect && !connectError && (
+        <span className="type-data max-w-[240px] text-chalk-muted">
           Install a browser wallet to connect.
         </span>
       )}

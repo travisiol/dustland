@@ -1,118 +1,89 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { clsx } from "clsx";
+import { Drawer } from "@/components/Drawer";
 import { WalletConnect } from "@/components/WalletConnect";
+import { Label } from "@/components/ui/Label";
 import { siteConfig } from "@/lib/site-config";
+import { useWorld } from "@/lib/worldState";
 
-/** The mark: a gavel head, reduced to the block and the strike line. */
-export function Mark({ size = 28, className }: { size?: number; className?: string }) {
+/*
+ * The state of the world, carried in the header.
+ *
+ * Every chip is a real reading. They all sit at zero right now, and that is
+ * the point — an honest empty board says "nothing has been taken yet" far
+ * better than an invented one says anything at all.
+ */
+/** The mark: a flag planted inside a parcel. The oldest lunar gesture. */
+function Mark() {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      aria-hidden
-      focusable="false"
-      className={className}
-    >
-      <rect x="4" y="4" width="24" height="24" rx="12" fill="currentColor" />
-      <path d="M11 20.5 L21 10.5" stroke="var(--paper)" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M9 12 l6 -3 3 6 -6 3 z" fill="var(--paper)" />
-      <path d="M12 23.5 h8" stroke="var(--seal)" strokeWidth="2.6" strokeLinecap="round" />
+    <svg width="30" height="34" viewBox="0 0 30 34" aria-hidden focusable="false">
+      <path
+        d="M15 1.5 L28 9 V25 L15 32.5 L2 25 V9 Z"
+        fill="none"
+        stroke="#ff9e2c"
+        strokeWidth="2"
+      />
+      <path d="M12 10 V24" stroke="#efebe4" strokeWidth="2" />
+      <path d="M12 10.5 H21 L18.2 14 L21 17.5 H12 Z" fill="#ff9e2c" />
     </svg>
   );
 }
 
-const links = [
-  { href: "/tokens", label: "Docket" },
-  { href: "/launch", label: "Launch" },
-  { href: "/studio", label: "Studio" },
-  { href: "/protocol", label: "Protocol" },
-] as const;
-
 export function Navbar() {
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const { totals } = useWorld();
+
+  const chips = [
+    { key: "Plots", value: String(totals.totalPlots) },
+    {
+      key: "Claimed",
+      // 3 of 999 is 0.3%, not 0% — round to whole numbers only once there
+      // is a whole number to show.
+      value: `${totals.claimedPct > 0 && totals.claimedPct < 1 ? totals.claimedPct.toFixed(1) : totals.claimedPct.toFixed(0)}%`,
+    },
+    { key: "Owners", value: totals.owners.toLocaleString("en-US") },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-rule bg-paper/92 backdrop-blur-sm">
-      <nav className="mx-auto flex h-16 max-w-[1400px] items-center gap-6 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5 text-ink" onClick={() => setOpen(false)}>
+    <header className="sticky top-0 z-50 border-b border-rule bg-void/92 backdrop-blur-sm">
+      <nav className="flex h-16 items-center gap-4 px-4 sm:px-6">
+        <Drawer />
+
+        <Link href="/" className="flex shrink-0 items-center gap-3">
           <Mark />
-          <span className="font-serif text-[22px] leading-none tracking-tight">
-            {siteConfig.name.charAt(0)}
-            <span className="lowercase">{siteConfig.name.slice(1)}</span>
+          <span className="hidden sm:block">
+            <span className="type-title block leading-none text-chalk">
+              {siteConfig.name}
+            </span>
+            <span className="type-label mt-1 block text-signal">
+              999 parcels. All equal.
+            </span>
           </span>
         </Link>
 
-        <ul className="hidden items-center gap-1 md:flex">
-          {links.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
-            return (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={clsx(
-                    "type-label px-3 py-2 transition-colors duration-150",
-                    active ? "text-ink underline underline-offset-8 decoration-seal decoration-2" : "text-ink-muted hover:text-ink",
-                  )}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-
-        <div className="ml-auto flex items-center gap-2">
-          <Link
-            href="/launch"
-            className="type-label hidden bg-ink px-3.5 py-2.5 text-paper transition-colors hover:bg-ink-soft sm:inline-flex"
-          >
-            Launch a token
-          </Link>
-          <span className="hidden sm:inline-flex">
-            <WalletConnect hint={false} />
-          </span>
-          <button
-            type="button"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
-            className="flex h-10 w-10 items-center justify-center text-ink md:hidden"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
-              {open ? (
-                <path d="M4 4 L16 16 M16 4 L4 16" stroke="currentColor" strokeWidth="1.8" />
-              ) : (
-                <path d="M3 5 H17 M3 10 H17 M3 15 H17" stroke="currentColor" strokeWidth="1.8" />
-              )}
-            </svg>
-          </button>
-        </div>
-      </nav>
-
-      {open && (
-        <ul className="border-t border-rule bg-paper px-4 py-3 md:hidden">
-          {[...links, { href: "/launch", label: "Launch a token" }].map((link) => (
-            <li key={link.label}>
-              <Link
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="type-label block border-b border-rule py-3.5 text-ink"
-              >
-                {link.label}
-              </Link>
+        <ul className="hidden items-center gap-5 lg:flex">
+          {chips.map((chip) => (
+            <li key={chip.key} className="flex items-baseline gap-2">
+              <Label className="text-chalk-muted">{chip.key}</Label>
+              <span className="type-data text-chalk">{chip.value}</span>
             </li>
           ))}
-          <li className="py-3.5 sm:hidden">
-            <WalletConnect />
+          <li className="flex items-baseline gap-2">
+            <Label className="text-chalk-muted">Token</Label>
+            <span className="type-data text-signal">$DUST</span>
           </li>
         </ul>
-      )}
+
+        <div className="ml-auto flex items-center gap-3">
+          <a
+            href="#how"
+            className="type-label hidden text-chalk-soft transition-colors duration-150 hover:text-signal md:inline"
+          >
+            How it works
+          </a>
+          <WalletConnect />
+        </div>
+      </nav>
     </header>
   );
 }

@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { useState, type ReactNode } from "react";
 import { wagmiConfig } from "@/lib/wagmiConfig";
-import { DocketProvider } from "@/lib/docketState";
+import { WorldStateProvider } from "@/lib/worldState";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -12,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <DocketProvider>{children}</DocketProvider>
+        <WorldStateProvider>{children}</WorldStateProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

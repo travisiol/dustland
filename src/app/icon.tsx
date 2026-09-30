@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 export const size = { width: 64, height: 64 };
 export const contentType = "image/png";
 
-/** The mark: an ink disc with the seal's strike line. */
+/** A lit disc on the vacuum: the body, and the signal it is marked in. */
 export default function Icon() {
   return new ImageResponse(
     (
@@ -14,23 +14,18 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f5f1e8",
+          background: "#07080a",
         }}
       >
         <div
           style={{
             display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-            width: 48,
-            height: 48,
-            borderRadius: 24,
-            background: "#16130f",
-            paddingBottom: 9,
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            background: "#ff9e2c",
           }}
-        >
-          <div style={{ display: "flex", width: 18, height: 5, background: "#c8102e", borderRadius: 3 }} />
-        </div>
+        />
       </div>
     ),
     { ...size },

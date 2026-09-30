@@ -1,68 +1,52 @@
-/*
- * VERDICT — the fair-launch launchpad on Robinhood Chain.
- *
- * One string renames the site everywhere: metadata, nav, OG image, footer.
- * Everything that could be a lie before launch (addresses, prices, social
- * links) is env-driven, so nothing placeholder can ship hardcoded.
- */
+export const siteConfig = {
+  // Placeholder name — not final. Swapping this one string renames the site
+  // everywhere: metadata, nav, OG image, footer.
+  name: "DUSTLAND",
+  tagline: "The Moon, in 999 parcels.",
+  description:
+    "Buy shares of lunar ground. The surface is cut into 999 equal parcels, and every parcel has its own token, its own market and its own economy.",
+  seoDescription:
+    "One body, 999 equal parcels. Every parcel of the Moon has its own token and its own holders.",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://dustland.example",
+  x: process.env.NEXT_PUBLIC_DUSTLAND_X ?? null,
+  discord: process.env.NEXT_PUBLIC_DUSTLAND_DISCORD ?? null,
+} as const;
 
 function envOrNull(value: string | undefined): string | null {
-  return value && value.trim().length > 0 ? value.trim() : null;
+  return value && value.trim().length > 0 ? value : null;
 }
 
-export const siteConfig = {
-  name: "VERDICT",
-  domain: "verdict.fun",
-  tagline: "The market is the jury.",
-  description:
-    "Launch a token in one transaction, straight into a live Uniswap pool with its liquidity sealed forever. Same opening price for everyone, including us. Creators earn half of every trade.",
-  seoDescription:
-    "The fair-launch launchpad on Robinhood Chain. One transaction, liquidity sealed forever, the same opening price for everyone, creators paid on every trade.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://verdict.fun",
-  x: envOrNull(process.env.NEXT_PUBLIC_VERDICT_X),
-  telegram: envOrNull(process.env.NEXT_PUBLIC_VERDICT_TELEGRAM),
-  discord: envOrNull(process.env.NEXT_PUBLIC_VERDICT_DISCORD),
-  github: envOrNull(process.env.NEXT_PUBLIC_VERDICT_GITHUB),
-} as const;
+function envInt(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
 
-/** The protocol token. Supply is a property of the contract, not a promise. */
-export const protocolToken = {
-  symbol: "$VERDICT",
-  supply: 1_000_000_000,
-  /** Share of the protocol's fee income used to buy back the token. */
-  buybackShareBps: 5000,
+export const world = {
+  totalParcels: 999,
+  /**
+   * Claims shown before a contract exists. Ignored the moment
+   * NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS is set — from then on the map is
+   * drawn from the chain's own claim bitmap.
+   */
+  placeholderClaims: envInt(process.env.NEXT_PUBLIC_DUSTLAND_PLACEHOLDER_CLAIMS, 3),
+  maxPerWallet: envInt(process.env.NEXT_PUBLIC_DUSTLAND_MAX_PER_WALLET, 5),
 } as const;
 
 /**
- * Launch geometry every token shares. The numbers that are structural
- * (supply, split, tiers) live here; the ones the contract decides (opening
- * FDV, creation fee) are read live once it exists and shown as unset until
- * then. Inventing them here is the one thing a holder could be hurt by.
+ * Claim surface. The address and price are env-driven so no placeholder
+ * address or invented price can ship hardcoded; with the address unset the
+ * whole claim UI sits in PREVIEW and the button is disabled.
  */
-export const launchRules = {
-  totalSupply: 1_000_000_000,
-  creatorFeeShareBps: 5000,
-  feeTiers: [
-    { bps: 30, label: "0.3%", note: "Cheaper to trade" },
-    { bps: 100, label: "1%", note: "More revenue per trade" },
-  ],
-  quoteSymbol: "ETH",
+export const claimConfig = {
+  contractAddress: envOrNull(
+    process.env.NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS,
+  ) as `0x${string}` | null,
+  /** Price per parcel in ETH as a decimal string, e.g. "0.04". */
+  priceEth: envOrNull(process.env.NEXT_PUBLIC_DUSTLAND_PRICE_ETH),
+  isLive: process.env.NEXT_PUBLIC_DUSTLAND_LIVE === "true",
 } as const;
 
-/**
- * Contract surface. With any address unset the app is in PREVIEW: the
- * docket shows a labelled sample, the launch button is disabled and says
- * so, and nothing on the site asserts activity that has not happened.
- */
-export const contracts = {
-  launchpad: envOrNull(process.env.NEXT_PUBLIC_VERDICT_LAUNCHPAD_ADDRESS) as
-    | `0x${string}`
-    | null,
-  router: envOrNull(process.env.NEXT_PUBLIC_VERDICT_ROUTER_ADDRESS) as
-    | `0x${string}`
-    | null,
-  isLive: process.env.NEXT_PUBLIC_VERDICT_LIVE === "true",
-} as const;
-
-export const isLive =
-  contracts.isLive && contracts.launchpad !== null && contracts.router !== null;
+export const canClaim =
+  claimConfig.isLive &&
+  claimConfig.contractAddress !== null &&
+  claimConfig.priceEth !== null;
