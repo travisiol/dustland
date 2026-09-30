@@ -1,0 +1,250 @@
+@import "tailwindcss";
+
+/*
+ * RUGPULL — the first rug with a warning label.
+ *
+ * Read as a hazard notice, not a pitch deck. The ground is asphalt black,
+ * the type is bone white, and the one colour that matters is caution tape
+ * yellow: it marks the threshold, the meter, and every place the page is
+ * telling you something you will wish you had read. Red is reserved for
+ * the rug itself and appears nowhere until the threshold is crossed —
+ * on a page whose entire content is one warning, red has to mean the
+ * thing happened or it means nothing.
+ *
+ * The display face is loud on purpose. This is a poster, and the poster
+ * says one number.
+ */
+:root {
+  --asphalt: #0b0b0c;
+  --asphalt-raised: #141416;
+  --asphalt-line: #232326;
+
+  --bone: #f4f0e8;
+  --bone-soft: #b3ada3;
+  --bone-muted: #7d786f;
+
+  --tape: #ffd60a;
+  --tape-bright: #ffe45c;
+  --tape-deep: #b89a00;
+
+  --blood: #ff3b30;
+  --blood-deep: #a3160e;
+
+  --rule: rgba(244, 240, 232, 0.12);
+  --rule-strong: rgba(244, 240, 232, 0.28);
+}
+
+@theme inline {
+  --color-ink: var(--asphalt);
+  --color-ink-raised: var(--asphalt-raised);
+  --color-ink-line: var(--asphalt-line);
+  --color-bone: var(--bone);
+  --color-bone-soft: var(--bone-soft);
+  --color-bone-muted: var(--bone-muted);
+  --color-tape: var(--tape);
+  --color-tape-bright: var(--tape-bright);
+  --color-tape-deep: var(--tape-deep);
+  --color-blood: var(--blood);
+  --color-blood-deep: var(--blood-deep);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+
+  --font-display:
+    "Archivo Black", "Arial Black", Impact, ui-sans-serif, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans:
+    "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--asphalt);
+}
+
+body {
+  background: var(--asphalt);
+  color: var(--bone);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--tape);
+  color: var(--asphalt);
+}
+
+:focus-visible {
+  outline: 2px solid var(--tape);
+  outline-offset: 2px;
+}
+
+/* ---- Type ------------------------------------------------------------- */
+
+.type-hero {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(56px, 15vw, 220px);
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.type-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(26px, 4.2vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.type-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(16px, 1.7vw, 22px);
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+/* Numbers. Always mono, always tabular — the whole page is one number. */
+.type-figure {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(40px, 7vw, 96px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-figure-sm {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 1.1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.type-data {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.type-lede {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.4;
+}
+
+/* ---- Surface ---------------------------------------------------------- */
+
+/*
+ * Caution tape. The diagonal band is the mark of the site: it frames the
+ * threshold on the meter, rules off sections, and is the only decoration
+ * the page allows itself.
+ */
+.hazard {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--tape) 0 14px,
+    var(--asphalt) 14px 28px
+  );
+}
+
+.hazard-blood {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--blood) 0 14px,
+    var(--asphalt) 14px 28px
+  );
+}
+
+.panel {
+  background: var(--asphalt-raised);
+  border: 1px solid var(--rule);
+}
+
+/* Faint dot grain so the black reads as a surface, not a void. */
+.grain {
+  background-image: radial-gradient(
+    rgba(244, 240, 232, 0.16) 0.5px,
+    transparent 0.5px
+  );
+  background-size: 6px 6px;
+}
+
+/* ---- Motion ----------------------------------------------------------- */
+
+/* The tape scrolls one full copy, then loops. */
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker 36s linear infinite;
+}
+
+/* Hazard stripes crawl, like a barrier being wound off a roll. */
+@keyframes crawl {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 0;
+  }
+}
+
+.animate-crawl {
+  animation: crawl 1.4s linear infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.animate-blink {
+  animation: blink 1.2s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-ticker,
+  .animate-crawl,
+  .animate-blink {
+    animation: none;
+  }
+}
