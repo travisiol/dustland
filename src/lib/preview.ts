@@ -1,35 +1,29 @@
-import { parcels } from "@/lib/parcels";
-import type { PlotMarket } from "@/lib/market";
+import type { DocketToken, FeeTierBps, PricePoint, Trade } from "@/lib/docket";
+import { launchRules } from "@/lib/site-config";
 
 /*
- * A worked example of a world a few days old.
+ * A worked example of a docket a few days old.
  *
- * Nothing here is real and nothing here is ever shown unless a visitor asks
- * for it: it sits behind an explicit "preview a live world" control so the
- * site can demonstrate what an active plot looks like without ever claiming
- * anybody has invested. The default state of the site remains the truth —
- * 999 plots open, none taken.
+ * Nothing here is real. It exists so a visitor can see what a filed token,
+ * a chart and a trade tape look like before the contracts are deployed, and
+ * it is labelled Preview wherever it is drawn. Scale is kept modest on
+ * purpose: a launchpad that is not live yet and shows millions in volume is
+ * advertising a lie about its size even with the word "preview" over it.
  *
- * Scale matters as much as honesty here. Three plots opened, a handful of
- * wallets in each, market caps in the low thousands: a fresh project that
- * showed sixty thousand owners would be advertising a lie about its size
- * even with the word "preview" over it.
+ * Everything is generated from a fixed seed, so the sample is identical on
+ * the server and the client and identical on every visit.
  */
 
-/** The three opened plots, ~120° apart so one is always on the near side. */
-const OPENED = [
-  { id: 303, owners: 7, marketCapUsd: 14_200, volume24hUsd: 1_342, change: 12.4 },
-  { id: 614, owners: 5, marketCapUsd: 8_600, volume24hUsd: 610, change: -6.8 },
-  { id: 845, owners: 4, marketCapUsd: 5_400, volume24hUsd: 388, change: 3.1 },
-] as const;
+/** Reference ETH price used only to express the sample in dollars. */
+export const PREVIEW_ETH_USD = 3200;
 
-/** Fixed supply per plot, so price falls out of the cap rather than the reverse. */
-const SUPPLY = 1_000_000;
+/** Opening FDV every sample launch shares, in USD. The contract sets the real one. */
+export const PREVIEW_OPENING_FDV_USD = 4000;
 
-/** Owner count at which a plot is drawn mint rather than amber. */
-export const CROWDED_OWNERS = 6;
+export const PREVIEW_OPENING_PRICE_USD =
+  PREVIEW_OPENING_FDV_USD / launchRules.totalSupply;
 
-function hash(seed: number): () => number {
+function rng(seed: number): () => number {
   let state = (seed * 2654435761) >>> 0;
   return () => {
     state = (state + 0x6d2b79f5) >>> 0;
@@ -40,108 +34,149 @@ function hash(seed: number): () => number {
   };
 }
 
-export interface PreviewHolder {
-  handle: string;
-  address: string;
-  share: number;
-  joinedDaysAgo: number;
+function hexAddress(rand: () => number): `0x${string}` {
+  let out = "0x";
+  for (let i = 0; i < 40; i += 1) out += Math.floor(rand() * 16).toString(16);
+  return out as `0x${string}`;
 }
 
-export interface PreviewMarket extends PlotMarket {
-  holders: PreviewHolder[];
+interface Seed {
+  name: string;
+  symbol: string;
+  description: string;
+  hue: number;
+  feeTierBps: FeeTierBps;
+  hoursOld: number;
+  /** Multiple of the opening price the token trades at now. */
+  mult: number;
+  holders: number;
+  volume24hUsd: number;
+  devBuyEth: number;
+  links?: DocketToken["links"];
 }
 
-const NAMES = [
-  "cobaltsentry",
-  "hollowbaron",
-  "ashwolf",
-  "vaultkeeper",
-  "emberlark",
-  "quietharbor",
-  "northfell",
-  "slatecrown",
-] as const;
+const SEEDS: Seed[] = [
+  { name: "Gavel Cat", symbol: "GAVEL", description: "Order in the court. The cat has spoken and the cat is final.", hue: 18, feeTierBps: 100, hoursOld: 62, mult: 9.4, holders: 212, volume24hUsd: 18_400, devBuyEth: 0.15, links: { x: "https://x.com" } },
+  { name: "Objection", symbol: "OBJ", description: "Sustained. Every time.", hue: 352, feeTierBps: 100, hoursOld: 41, mult: 4.1, holders: 96, volume24hUsd: 7_900, devBuyEth: 0.05 },
+  { name: "Habeas Corgi", symbol: "CORGI", description: "Produce the dog. The dog must be produced.", hue: 34, feeTierBps: 30, hoursOld: 29, mult: 12.8, holders: 301, volume24hUsd: 31_200, devBuyEth: 0.2, links: { x: "https://x.com", telegram: "https://t.me" } },
+  { name: "Pro Bono", symbol: "BONO", description: "Free of charge, for the public good, and for the memes.", hue: 205, feeTierBps: 30, hoursOld: 18, mult: 2.3, holders: 58, volume24hUsd: 4_100, devBuyEth: 0 },
+  { name: "Mistrial", symbol: "MIST", description: "Something went wrong and we are doing it all again.", hue: 268, feeTierBps: 100, hoursOld: 55, mult: 1.0, holders: 24, volume24hUsd: 640, devBuyEth: 0.02 },
+  { name: "Jury Duty", symbol: "DUTY", description: "You have been summoned. Attendance is mandatory.", hue: 150, feeTierBps: 100, hoursOld: 9, mult: 3.6, holders: 71, volume24hUsd: 9_300, devBuyEth: 0.1 },
+  { name: "Loophole", symbol: "LOOP", description: "Technically allowed.", hue: 48, feeTierBps: 30, hoursOld: 74, mult: 1.7, holders: 44, volume24hUsd: 1_900, devBuyEth: 0.03 },
+  { name: "Bench Press", symbol: "BENCH", description: "The judge lifts. The judge is jacked.", hue: 8, feeTierBps: 100, hoursOld: 5, mult: 6.2, holders: 118, volume24hUsd: 14_700, devBuyEth: 0.12, links: { website: "https://example.com" } },
+  { name: "Fine Print", symbol: "FINE", description: "You agreed to this.", hue: 220, feeTierBps: 30, hoursOld: 36, mult: 1.2, holders: 31, volume24hUsd: 1_100, devBuyEth: 0 },
+  { name: "Contempt", symbol: "CNTMPT", description: "Held in it. Proudly.", hue: 330, feeTierBps: 100, hoursOld: 2, mult: 2.9, holders: 39, volume24hUsd: 6_200, devBuyEth: 0.08 },
+  { name: "Sustained", symbol: "SUST", description: "The chair agrees with you, for once.", hue: 120, feeTierBps: 100, hoursOld: 88, mult: 1.0, holders: 12, volume24hUsd: 210, devBuyEth: 0.01 },
+  { name: "Plea Deal", symbol: "PLEA", description: "Take the deal. Everyone takes the deal.", hue: 190, feeTierBps: 30, hoursOld: 13, mult: 1.9, holders: 47, volume24hUsd: 3_300, devBuyEth: 0.04 },
+];
 
-/**
- * With only a handful of wallets in a plot they hold all of it between
- * them, so the shares are drawn to sum to exactly 100 and every owner is
- * listed. No "and 240 others" tail to hide behind.
- */
-function makeHolders(rand: () => number, owners: number): PreviewHolder[] {
-  const weights = Array.from({ length: owners }, () => 0.35 + rand());
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  const shares = weights.map((weight) => (weight / total) * 100);
-
-  const holders = shares.map((share) => {
-    const hex = Math.floor(rand() * 0xffffff)
-      .toString(16)
-      .padStart(6, "0");
-    const tail = Math.floor(rand() * 0xffff)
-      .toString(16)
-      .padStart(4, "0");
-    return {
-      handle: `${NAMES[Math.floor(rand() * NAMES.length)]}-${Math.floor(rand() * 90) + 10}`,
-      address: `0x${hex}…${tail}`,
-      share: Math.round(share * 100) / 100,
-      joinedDaysAgo: Math.floor(rand() * 5) + 1,
-    };
-  });
-
-  return holders.sort((a, b) => b.share - a.share);
+function makeSeries(rand: () => number, hoursOld: number, mult: number): PricePoint[] {
+  const points = Math.max(24, Math.min(160, Math.round(hoursOld * 2)));
+  const open = PREVIEW_OPENING_PRICE_USD;
+  const target = open * mult;
+  const out: PricePoint[] = [];
+  let level = open;
+  for (let i = 0; i <= points; i += 1) {
+    const t = i / points;
+    // Drift toward the target with noise that decays as the launch ages,
+    // then clamp at the opening price because nothing can trade below it.
+    const drift = open + (target - open) * Math.pow(t, 0.8);
+    const noise = 1 + (rand() - 0.5) * 0.28 * (1 - t * 0.5);
+    level = Math.max(open, drift * noise);
+    out.push({ hoursAgo: hoursOld * (1 - t), priceUsd: level });
+  }
+  out[out.length - 1] = { hoursAgo: 0, priceUsd: target };
+  return out;
 }
 
-function unopened(id: number): PreviewMarket {
+function makeTrades(
+  rand: () => number,
+  priceUsd: number,
+  hoursOld: number,
+  devBuyEth: number,
+  creator: `0x${string}`,
+): Trade[] {
+  const count = 14;
+  const trades: Trade[] = [];
+  let ago = 20_000 + rand() * 240_000;
+  for (let i = 0; i < count; i += 1) {
+    const side: Trade["side"] = rand() < 0.62 ? "buy" : "sell";
+    const quoteAmount = Number((0.004 + rand() * rand() * 0.25).toFixed(4));
+    const p = priceUsd * (1 + (rand() - 0.5) * 0.06);
+    trades.push({
+      id: `t${i}`,
+      side,
+      quoteAmount,
+      tokenAmount: (quoteAmount * PREVIEW_ETH_USD) / p,
+      priceUsd: p,
+      trader: hexAddress(rand),
+      agoMs: ago,
+    });
+    ago += 30_000 + rand() * 900_000;
+  }
+  if (devBuyEth > 0) {
+    trades.push({
+      id: "dev",
+      side: "buy",
+      quoteAmount: devBuyEth,
+      tokenAmount: (devBuyEth * PREVIEW_ETH_USD) / PREVIEW_OPENING_PRICE_USD,
+      priceUsd: PREVIEW_OPENING_PRICE_USD,
+      trader: creator,
+      agoMs: hoursOld * 3_600_000,
+      isDevBuy: true,
+    });
+  }
+  return trades;
+}
+
+function build(seed: Seed, index: number): DocketToken {
+  const rand = rng(index + 11);
+  const creator = hexAddress(rand);
+  const priceUsd = PREVIEW_OPENING_PRICE_USD * seed.mult;
+  const series = makeSeries(rand, seed.hoursOld, seed.mult);
+  const dayAgo =
+    series.find((p) => p.hoursAgo <= 24) ?? series[0];
+  const change24h =
+    seed.hoursOld <= 24
+      ? (priceUsd / PREVIEW_OPENING_PRICE_USD - 1) * 100
+      : (priceUsd / dayAgo.priceUsd - 1) * 100;
+  const feeRate = seed.feeTierBps / 10_000;
+  // Roughly: lifetime volume ≈ 24h volume scaled by age, creator gets half the fee.
+  const lifetimeVolume = seed.volume24hUsd * Math.max(1, seed.hoursOld / 24) * 0.8;
+  const creatorFeesUsd = lifetimeVolume * feeRate * 0.5;
+  const words = seed.name.split(" ");
   return {
-    id,
-    isLive: false,
-    activity: 0,
-    priceUsd: 0,
-    change24h: 0,
-    marketCapUsd: 0,
-    volume24hUsd: 0,
-    owners: 0,
-    rewardsUsd: 0,
-    topHolders: [],
-    holders: [],
+    address: hexAddress(rand),
+    pool: hexAddress(rand),
+    creator,
+    number: index + 1,
+    name: seed.name,
+    symbol: seed.symbol,
+    description: seed.description,
+    monogram: (words[0][0] + (words[1]?.[0] ?? words[0][1])).toUpperCase(),
+    hue: seed.hue,
+    feeTierBps: seed.feeTierBps,
+    launchedAgoMs: seed.hoursOld * 3_600_000,
+    devBuyEth: seed.devBuyEth,
+    priceUsd,
+    openingPriceUsd: PREVIEW_OPENING_PRICE_USD,
+    change24h,
+    marketCapUsd: priceUsd * launchRules.totalSupply,
+    volume24hUsd: seed.volume24hUsd,
+    holders: seed.holders,
+    creatorFeesUsd,
+    series,
+    trades: makeTrades(rand, priceUsd, seed.hoursOld, seed.devBuyEth, creator),
+    links: seed.links ?? {},
   };
 }
 
-const byId = new Map<number, PreviewMarket>();
-const peak = Math.max(...OPENED.map((plot) => plot.volume24hUsd));
+// Docket numbers follow launch order, oldest first.
+const ordered = [...SEEDS].sort((a, b) => b.hoursOld - a.hoursOld);
 
-for (const plot of OPENED) {
-  const rand = hash(plot.id);
-  const holders = makeHolders(rand, plot.owners);
-  byId.set(plot.id, {
-    id: plot.id,
-    isLive: true,
-    activity: plot.volume24hUsd / peak,
-    priceUsd: plot.marketCapUsd / SUPPLY,
-    change24h: plot.change,
-    marketCapUsd: plot.marketCapUsd,
-    volume24hUsd: plot.volume24hUsd,
-    owners: plot.owners,
-    // Fees the plot has thrown off since it opened: a 1% trading fee over a
-    // few days of the volume above, not a headline number.
-    rewardsUsd: Math.round(plot.volume24hUsd * 0.01 * (2 + rand() * 2)),
-    topHolders: holders.slice(0, 3).map((holder) => holder.share),
-    holders,
-  });
+export const previewTokens: DocketToken[] = ordered.map(build);
+
+export function previewTokenByAddress(address: string): DocketToken | undefined {
+  const needle = address.toLowerCase();
+  return previewTokens.find((t) => t.address.toLowerCase() === needle);
 }
-
-export function previewMarketFor(id: number): PreviewMarket {
-  return byId.get(id) ?? unopened(id);
-}
-
-const live = [...byId.values()];
-
-export const previewPeakActivity = 1;
-
-export const previewTotals = {
-  totalPlots: parcels.length,
-  livePlots: live.length,
-  owners: live.reduce((sum, market) => sum + market.owners, 0),
-  volume24hUsd: live.reduce((sum, market) => sum + market.volume24hUsd, 0),
-  rewardsUsd: live.reduce((sum, market) => sum + market.rewardsUsd, 0),
-  claimedPct: (live.length / parcels.length) * 100,
-};

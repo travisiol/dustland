@@ -1,175 +1,132 @@
 @import "tailwindcss";
 
 /*
- * DUSTLAND — 999 equal parcels of the Moon.
+ * VERDICT — the fair-launch launchpad on Robinhood Chain.
  *
- * Read as a surface readout, not a poster. The ground is vacuum black and
- * warm regolith grey — the Moon is not blue, and nothing here should be —
- * with amber reserved for value: a plot only takes colour once it has a
- * market, and the busiest plots carry a halo. That reservation is the whole
- * system. On a field of 999 identical hexagons, amber has to mean activity
- * or it means nothing.
+ * Art direction: a court record, not a trading terminal. Everything is set
+ * on warm paper in ink, with one red reserved for the seal — the stamp that
+ * says a launch is closed, locked and beyond anyone's reach, including ours.
+ * Red never decorates; it only ever marks something that cannot be undone.
+ * Brass is the second reserved colour and it means money: fees, rewards,
+ * the protocol token. Green and rust are the market's own colours and
+ * appear only on price movement and trades.
  *
- * There is no display face. Everything loud is set in mono, tracked out and
- * stencilled, the way a designation is painted on a hull; everything quiet
- * is IBM Plex. A heavy poster font would make this a brand for a world with
- * no weather, no colour and no air — the type should sound like the
- * instrument, not the advertisement.
+ * Type: a sharp serif for anything that reads like a ruling, a plain
+ * grotesk for everything that reads like a form, and a mono for every
+ * number, because a number on a market surface is evidence.
  */
 :root {
-  --vacuum: #07080a;
-  --regolith: #131417;
-  --regolith-raised: #1b1d21;
-  --regolith-line: #292c31;
+  --paper: #f5f1e8;
+  --paper-deep: #ebe5d8;
+  --paper-raised: #fbf9f4;
+  --paper-line: #d8d0bf;
 
-  --chalk: #efebe4;
-  --chalk-soft: #ada79e;
-  --chalk-muted: #7e7a73;
+  --ink: #16130f;
+  --ink-soft: #4b453c;
+  --ink-muted: #857d71;
+  --ink-faint: #b3aa9b;
 
-  --signal: #ff9e2c;
-  --signal-bright: #ffc46b;
-  --signal-deep: #a85f04;
+  --seal: #c8102e;
+  --seal-deep: #9a0b22;
+  --seal-wash: rgba(200, 16, 46, 0.08);
 
-  --rule: rgba(220, 214, 205, 0.13);
-  --rule-strong: rgba(220, 214, 205, 0.28);
+  --brass: #a8761f;
+  --brass-bright: #c9932e;
+  --brass-wash: rgba(168, 118, 31, 0.1);
 
-  --gain: #5bd6a0;
-  --loss: #e2604a;
+  --up: #17734a;
+  --up-wash: rgba(23, 115, 74, 0.1);
+  --down: #a13a2a;
+  --down-wash: rgba(161, 58, 42, 0.1);
 
-  /* Ownership segments. Amber is always you; the greys are everyone else,
-     so the bar reads at a glance as "my slice against the rest". */
-  --holder-near: #5a6473;
-  --holder-far: #8e97a6;
+  --rule: rgba(22, 19, 15, 0.14);
+  --rule-strong: rgba(22, 19, 15, 0.42);
 }
 
 @theme inline {
-  --color-void: var(--vacuum);
-  --color-field: var(--regolith);
-  --color-field-raised: var(--regolith-raised);
-  --color-field-line: var(--regolith-line);
-  --color-chalk: var(--chalk);
-  --color-chalk-soft: var(--chalk-soft);
-  --color-chalk-muted: var(--chalk-muted);
-  --color-signal: var(--signal);
-  --color-signal-bright: var(--signal-bright);
-  --color-signal-deep: var(--signal-deep);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-paper-raised: var(--paper-raised);
+  --color-paper-line: var(--paper-line);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-seal: var(--seal);
+  --color-seal-deep: var(--seal-deep);
+  --color-seal-wash: var(--seal-wash);
+  --color-brass: var(--brass);
+  --color-brass-bright: var(--brass-bright);
+  --color-brass-wash: var(--brass-wash);
+  --color-up: var(--up);
+  --color-up-wash: var(--up-wash);
+  --color-down: var(--down);
+  --color-down-wash: var(--down-wash);
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
-  --color-gain: var(--gain);
-  --color-loss: var(--loss);
-  --color-holder-near: var(--holder-near);
-  --color-holder-far: var(--holder-far);
 
-  --font-display:
-    "Space Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --font-mono:
-    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-serif:
+    "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --font-sans:
-    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 html {
   scroll-behavior: smooth;
-  background: var(--vacuum);
+  background: var(--paper);
 }
 
 body {
-  background: var(--vacuum);
-  color: var(--chalk);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11";
 }
 
 ::selection {
-  background: var(--signal);
-  color: var(--vacuum);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 2px;
 }
 
 /* ---- Type ------------------------------------------------------------- */
 
-/*
- * Sized against its own column, not the viewport. The wordmark sits in a
- * fixed rail on desktop and full width when the layout stacks, so a vw
- * clamp gets it wrong in one of those two places every time.
- */
-.pitch {
-  container-type: inline-size;
-}
-
 .type-hero {
-  font-family: var(--font-display);
-  font-weight: 700;
-  /* Mono is wide and this is tracked out on top, so it needs a lower
-     ceiling than a condensed poster face would want. */
-  font-size: clamp(28px, 10.5cqw, 66px);
-  line-height: 1;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-/*
- * The wordmark as a designation stencilled on a panel: rules above and
- * below, and the trailing letter-space pushed back so the tracking does not
- * shift the word off its own left margin.
- */
-.wordmark-stencil {
-  display: block;
-  padding: 0.3em 0 0.26em;
-  border-top: 1px solid var(--rule-strong);
-  border-bottom: 1px solid var(--rule-strong);
-  text-indent: 0.16em;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(44px, 8.2vw, 118px);
+  line-height: 0.94;
+  letter-spacing: -0.02em;
 }
 
 .type-display {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(17px, 2.1vw, 26px);
-  line-height: 1.15;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(32px, 4.6vw, 60px);
+  line-height: 1;
+  letter-spacing: -0.015em;
 }
 
 .type-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(14px, 1.5vw, 18px);
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* Numbers. Always mono, always tabular — this is a market surface. */
-.type-figure {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-
-.type-figure-sm {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-
-.type-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-serif);
   font-weight: 400;
-  font-size: 10px;
+  font-size: clamp(22px, 2.4vw, 30px);
   line-height: 1.1;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
 }
 
-.type-data {
-  font-family: var(--font-mono);
+.type-lead {
+  font-family: var(--font-sans);
   font-weight: 400;
-  font-size: 12px;
-  line-height: 1.45;
-  font-variant-numeric: tabular-nums;
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.5;
 }
 
 .type-body {
@@ -179,43 +136,150 @@ body {
   line-height: 1.6;
 }
 
+.type-small {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* A key on the form: mono, tracked out, uppercase. */
+.type-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 10.5px;
+  line-height: 1.1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.type-data {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-figure {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-figure-lg {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.italic-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
 /* ---- Surface ---------------------------------------------------------- */
 
-/*
- * Scanlines. Two pixels, barely there — enough that a panel reads as
- * something being displayed rather than something being printed, which is
- * the whole distance between this and a drafting sheet.
- */
-.raster {
+/* Laid paper: faint horizontal chain lines, never behind small text. */
+.laid {
   background-image: repeating-linear-gradient(
     to bottom,
-    rgba(220, 214, 205, 0.035) 0px,
-    rgba(220, 214, 205, 0.035) 1px,
+    rgba(22, 19, 15, 0.028) 0px,
+    rgba(22, 19, 15, 0.028) 1px,
     transparent 1px,
-    transparent 3px
+    transparent 28px
   );
 }
 
-/* Regolith grain, used sparingly and never behind small text. */
-.grain {
-  background-image: radial-gradient(
-    rgba(220, 214, 205, 0.22) 0.5px,
-    transparent 0.5px
-  );
-  background-size: 5px 5px;
-}
-
-.panel {
-  background: var(--regolith);
+.card {
+  background: var(--paper-raised);
   border: 1px solid var(--rule);
 }
 
-:focus-visible {
-  outline: 2px solid var(--signal);
-  outline-offset: 2px;
+.card-ink {
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
 }
 
-/* Genesis ticker. Duplicated content scrolls one full copy, then loops. */
+/*
+ * The seal. A rubber stamp: double red rule, tracked mono, a few degrees
+ * off square because a stamp is applied by a hand, and a grain mask so the
+ * ink sits unevenly the way real ink does.
+ */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45em 0.8em;
+  border: 2px solid var(--seal);
+  box-shadow: inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--seal);
+  color: var(--seal);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  -webkit-mask-image: radial-gradient(
+    rgba(0, 0, 0, 0.92) 55%,
+    rgba(0, 0, 0, 0.78) 100%
+  );
+  mask-image: radial-gradient(rgba(0, 0, 0, 0.92) 55%, rgba(0, 0, 0, 0.78) 100%);
+}
+
+.stamp-lg {
+  font-size: 15px;
+  padding: 0.55em 1em;
+  border-width: 3px;
+  box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 6px var(--seal);
+}
+
+.stamp-sm {
+  font-size: 9px;
+  padding: 0.35em 0.6em;
+  border-width: 1.5px;
+  box-shadow: inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--seal);
+  letter-spacing: 0.18em;
+}
+
+/* Dotted leader between a key and its value, as in a table of contents. */
+.leader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+}
+.leader::after {
+  content: "";
+  order: 1;
+  flex: 1;
+  border-bottom: 1px dotted var(--rule-strong);
+  transform: translateY(-0.25em);
+}
+.leader > :last-child {
+  order: 2;
+}
+
+/* Underline that behaves like ink, not a browser default. */
+.link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--rule-strong);
+  transition: text-decoration-color 150ms ease, color 150ms ease;
+}
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ---- Motion ----------------------------------------------------------- */
+
 @keyframes ticker {
   from {
     transform: translateX(0);
@@ -226,15 +290,77 @@ body {
 }
 
 .animate-ticker {
-  animation: ticker 42s linear infinite;
+  animation: ticker 48s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise {
+  animation: rise 640ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.rise-2 {
+  animation-delay: 90ms;
+}
+.rise-3 {
+  animation-delay: 180ms;
+}
+.rise-4 {
+  animation-delay: 270ms;
+}
+
+@keyframes stamp-in {
+  0% {
+    opacity: 0;
+    transform: rotate(-6deg) scale(1.6);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-6deg) scale(0.96);
+  }
+  100% {
+    transform: rotate(-6deg) scale(1);
+  }
+}
+
+.stamp-in {
+  animation: stamp-in 520ms cubic-bezier(0.2, 0.9, 0.2, 1) 520ms both;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.8s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-
-  .animate-ticker {
+  .animate-ticker,
+  .rise,
+  .stamp-in,
+  .pulse-dot {
     animation: none;
   }
 }

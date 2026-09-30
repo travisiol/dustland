@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { siteConfig } from "@/lib/site-config";
 
 // Fonts load from a runtime <link> rather than next/font/google, which
@@ -15,15 +16,13 @@ export const metadata: Metadata = {
   },
   description: siteConfig.seoDescription,
   keywords: [
-    "Moon",
-    "lunar",
-    "parcels",
-    "regolith",
-    "maria",
-    "NFT",
-    "land",
+    "launchpad",
+    "fair launch",
+    "meme coin",
     "Robinhood Chain",
-    "equal area",
+    "Uniswap v3",
+    "locked liquidity",
+    "token launch",
   ],
   openGraph: {
     title: `${siteConfig.name} — ${siteConfig.tagline}`,
@@ -40,8 +39,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07080a",
-  colorScheme: "dark",
+  themeColor: "#f5f1e8",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -49,21 +48,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className="h-full">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="flex min-h-full flex-col bg-void text-chalk">
+      <body className="flex min-h-full flex-col bg-paper text-ink">
         <Providers>
           <Navbar />
-          <main className="relative flex-1 overflow-hidden">{children}</main>
+          <main className="flex-1">{children}</main>
+          <Footer />
         </Providers>
       </body>
     </html>
