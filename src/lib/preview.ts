@@ -1,147 +1,153 @@
-import { parcels } from "@/lib/parcels";
-import type { PlotMarket } from "@/lib/market";
+import type { Portfolio } from "@/lib/portfolios";
 
 /*
- * A worked example of a world a few days old.
- *
- * Nothing here is real and nothing here is ever shown unless a visitor asks
- * for it: it sits behind an explicit "preview a live world" control so the
- * site can demonstrate what an active plot looks like without ever claiming
- * anybody has invested. The default state of the site remains the truth —
- * 999 plots open, none taken.
- *
- * Scale matters as much as honesty here. Three plots opened, a handful of
- * wallets in each, market caps in the low thousands: a fresh project that
- * showed sixty thousand owners would be advertising a lie about its size
- * even with the word "preview" over it.
+ * Preview data. These are worked examples so the site has something to
+ * show before the factory contract exists — labelled "Preview" everywhere
+ * they appear, and dropped the moment NEXT_PUBLIC_ALLOY_FACTORY_ADDRESS is
+ * set. None of the figures are a claim about anything that has happened.
  */
 
-/** The three opened plots, ~120° apart so one is always on the near side. */
-const OPENED = [
-  { id: 303, owners: 7, marketCapUsd: 14_200, volume24hUsd: 1_342, change: 12.4 },
-  { id: 614, owners: 5, marketCapUsd: 8_600, volume24hUsd: 610, change: -6.8 },
-  { id: 845, owners: 4, marketCapUsd: 5_400, volume24hUsd: 388, change: 3.1 },
-] as const;
+const CREATOR_A = "0x7A1e00000000000000000000000000000000A110" as const;
+const CREATOR_B = "0xB0b0000000000000000000000000000000000B0b" as const;
+const CREATOR_C = "0xC0de0000000000000000000000000000000C0de0" as const;
 
-/** Fixed supply per plot, so price falls out of the cap rather than the reverse. */
-const SUPPLY = 1_000_000;
-
-/** Owner count at which a plot is drawn mint rather than amber. */
-export const CROWDED_OWNERS = 6;
-
-function hash(seed: number): () => number {
-  let state = (seed * 2654435761) >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-export interface PreviewHolder {
-  handle: string;
-  address: string;
-  share: number;
-  joinedDaysAgo: number;
-}
-
-export interface PreviewMarket extends PlotMarket {
-  holders: PreviewHolder[];
-}
-
-const NAMES = [
-  "cobaltsentry",
-  "hollowbaron",
-  "ashwolf",
-  "vaultkeeper",
-  "emberlark",
-  "quietharbor",
-  "northfell",
-  "slatecrown",
-] as const;
-
-/**
- * With only a handful of wallets in a plot they hold all of it between
- * them, so the shares are drawn to sum to exactly 100 and every owner is
- * listed. No "and 240 others" tail to hide behind.
- */
-function makeHolders(rand: () => number, owners: number): PreviewHolder[] {
-  const weights = Array.from({ length: owners }, () => 0.35 + rand());
-  const total = weights.reduce((sum, weight) => sum + weight, 0);
-  const shares = weights.map((weight) => (weight / total) * 100);
-
-  const holders = shares.map((share) => {
-    const hex = Math.floor(rand() * 0xffffff)
-      .toString(16)
-      .padStart(6, "0");
-    const tail = Math.floor(rand() * 0xffff)
-      .toString(16)
-      .padStart(4, "0");
-    return {
-      handle: `${NAMES[Math.floor(rand() * NAMES.length)]}-${Math.floor(rand() * 90) + 10}`,
-      address: `0x${hex}…${tail}`,
-      share: Math.round(share * 100) / 100,
-      joinedDaysAgo: Math.floor(rand() * 5) + 1,
-    };
-  });
-
-  return holders.sort((a, b) => b.share - a.share);
-}
-
-function unopened(id: number): PreviewMarket {
-  return {
-    id,
-    isLive: false,
-    activity: 0,
-    priceUsd: 0,
-    change24h: 0,
-    marketCapUsd: 0,
-    volume24hUsd: 0,
-    owners: 0,
-    rewardsUsd: 0,
-    topHolders: [],
-    holders: [],
-  };
-}
-
-const byId = new Map<number, PreviewMarket>();
-const peak = Math.max(...OPENED.map((plot) => plot.volume24hUsd));
-
-for (const plot of OPENED) {
-  const rand = hash(plot.id);
-  const holders = makeHolders(rand, plot.owners);
-  byId.set(plot.id, {
-    id: plot.id,
-    isLive: true,
-    activity: plot.volume24hUsd / peak,
-    priceUsd: plot.marketCapUsd / SUPPLY,
-    change24h: plot.change,
-    marketCapUsd: plot.marketCapUsd,
-    volume24hUsd: plot.volume24hUsd,
-    owners: plot.owners,
-    // Fees the plot has thrown off since it opened: a 1% trading fee over a
-    // few days of the volume above, not a headline number.
-    rewardsUsd: Math.round(plot.volume24hUsd * 0.01 * (2 + rand() * 2)),
-    topHolders: holders.slice(0, 3).map((holder) => holder.share),
-    holders,
-  });
-}
-
-export function previewMarketFor(id: number): PreviewMarket {
-  return byId.get(id) ?? unopened(id);
-}
-
-const live = [...byId.values()];
-
-export const previewPeakActivity = 1;
-
-export const previewTotals = {
-  totalPlots: parcels.length,
-  livePlots: live.length,
-  owners: live.reduce((sum, market) => sum + market.owners, 0),
-  volume24hUsd: live.reduce((sum, market) => sum + market.volume24hUsd, 0),
-  rewardsUsd: live.reduce((sum, market) => sum + market.rewardsUsd, 0),
-  claimedPct: (live.length / parcels.length) * 100,
-};
+export const previewPortfolios: Portfolio[] = [
+  {
+    slug: "mag7",
+    vault: null,
+    name: "Magnificent Seven",
+    ticker: "MAG7",
+    description:
+      "The seven companies that carried the index. Equal weight, so no single name gets to decide the outcome.",
+    creator: CREATOR_A,
+    createdAt: "2026-09-02T10:00:00Z",
+    holdings: [
+      { symbol: "NVDA", weightBps: 1429 },
+      { symbol: "AAPL", weightBps: 1429 },
+      { symbol: "MSFT", weightBps: 1429 },
+      { symbol: "GOOGL", weightBps: 1429 },
+      { symbol: "AMZN", weightBps: 1428 },
+      { symbol: "META", weightBps: 1428 },
+      { symbol: "TSLA", weightBps: 1428 },
+    ],
+    entryFeeBps: 50,
+    managementFeeBps: 0,
+    tvlUsd: 412_380,
+    supply: 3_840,
+    holders: 212,
+    preview: true,
+  },
+  {
+    slug: "silicon",
+    vault: null,
+    name: "Silicon",
+    ticker: "SILIC",
+    description:
+      "The chip stack end to end: the designers, the foundry and the lithography that makes the foundry possible.",
+    creator: CREATOR_B,
+    createdAt: "2026-09-06T14:30:00Z",
+    holdings: [
+      { symbol: "NVDA", weightBps: 3000 },
+      { symbol: "TSM", weightBps: 2000 },
+      { symbol: "AVGO", weightBps: 1500 },
+      { symbol: "AMD", weightBps: 1500 },
+      { symbol: "ASML", weightBps: 1200 },
+      { symbol: "MU", weightBps: 800 },
+    ],
+    entryFeeBps: 100,
+    managementFeeBps: 50,
+    tvlUsd: 268_940,
+    supply: 2_115,
+    holders: 148,
+    preview: true,
+  },
+  {
+    slug: "steady",
+    vault: null,
+    name: "Steady Hands",
+    ticker: "STEADY",
+    description:
+      "Dividends, staples and a treasury sleeve. The basket you forge for money you are not allowed to lose.",
+    creator: CREATOR_C,
+    createdAt: "2026-09-09T09:15:00Z",
+    holdings: [
+      { symbol: "SCHD", weightBps: 2500 },
+      { symbol: "TLT", weightBps: 2000 },
+      { symbol: "JNJ", weightBps: 1500 },
+      { symbol: "PG", weightBps: 1500 },
+      { symbol: "KO", weightBps: 1000 },
+      { symbol: "GLD", weightBps: 1500 },
+    ],
+    entryFeeBps: 25,
+    managementFeeBps: 25,
+    tvlUsd: 189_500,
+    supply: 1_860,
+    holders: 97,
+    preview: true,
+  },
+  {
+    slug: "sixtyforty",
+    vault: null,
+    name: "Sixty Forty",
+    ticker: "SIXTY",
+    description:
+      "The oldest allocation there is, now one token: total market and long treasuries, rebalanced on redemption.",
+    creator: CREATOR_A,
+    createdAt: "2026-09-12T16:45:00Z",
+    holdings: [
+      { symbol: "VTI", weightBps: 6000 },
+      { symbol: "TLT", weightBps: 4000 },
+    ],
+    entryFeeBps: 0,
+    managementFeeBps: 10,
+    tvlUsd: 94_200,
+    supply: 940,
+    holders: 61,
+    preview: true,
+  },
+  {
+    slug: "rails",
+    vault: null,
+    name: "Payment Rails",
+    ticker: "RAILS",
+    description:
+      "Every card swipe and every onchain trade pays somebody in this basket.",
+    creator: CREATOR_B,
+    createdAt: "2026-09-18T11:20:00Z",
+    holdings: [
+      { symbol: "V", weightBps: 2500 },
+      { symbol: "MA", weightBps: 2500 },
+      { symbol: "COIN", weightBps: 2000 },
+      { symbol: "HOOD", weightBps: 2000 },
+      { symbol: "JPM", weightBps: 1000 },
+    ],
+    entryFeeBps: 75,
+    managementFeeBps: 0,
+    tvlUsd: 57_800,
+    supply: 566,
+    holders: 44,
+    preview: true,
+  },
+  {
+    slug: "counter",
+    vault: null,
+    name: "Counter Trend",
+    ticker: "CNTR",
+    description:
+      "Gold, bitcoin and real estate against a core of broad equities. Something in here is always going the other way.",
+    creator: CREATOR_C,
+    createdAt: "2026-09-24T08:05:00Z",
+    holdings: [
+      { symbol: "SPY", weightBps: 4000 },
+      { symbol: "GLD", weightBps: 2500 },
+      { symbol: "IBIT", weightBps: 2000 },
+      { symbol: "VNQ", weightBps: 1500 },
+    ],
+    entryFeeBps: 150,
+    managementFeeBps: 100,
+    tvlUsd: 31_150,
+    supply: 305,
+    holders: 29,
+    preview: true,
+  },
+];

@@ -1,9 +1,23 @@
-import { World } from "@/components/World";
+import { AssetMarquee } from "@/components/home/AssetMarquee";
+import { Backing } from "@/components/home/Backing";
+import { Creators } from "@/components/home/Creators";
+import { CtaBand } from "@/components/home/CtaBand";
+import { Faq } from "@/components/home/Faq";
+import { Featured } from "@/components/home/Featured";
+import { Hero } from "@/components/home/Hero";
+import { HowItWorks } from "@/components/home/HowItWorks";
 
-/*
- * One page. The globe is the product, the pitch sits over it, and anything
- * else opens on top and closes back to the world.
- */
 export default function Home() {
-  return <World />;
+  return (
+    <>
+      <Hero />
+      <AssetMarquee />
+      <Featured />
+      <HowItWorks />
+      <Backing />
+      <Creators />
+      <Faq />
+      <CtaBand />
+    </>
+  );
 }

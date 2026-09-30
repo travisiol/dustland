@@ -1,52 +1,56 @@
+/**
+ * Everything that names the product lives here. Swap `name` and the
+ * `NEXT_PUBLIC_ALLOY_*` env prefix and the site is renamed everywhere:
+ * metadata, nav, OG image, footer, FAQ.
+ */
 export const siteConfig = {
-  // Placeholder name — not final. Swapping this one string renames the site
-  // everywhere: metadata, nav, OG image, footer.
-  name: "DUSTLAND",
-  tagline: "The Moon, in 999 parcels.",
+  name: "Alloy",
+  wordmark: "ALLOY",
+  tagline: "Forge your own portfolio.",
   description:
-    "Buy shares of lunar ground. The surface is cut into 999 equal parcels, and every parcel has its own token, its own market and its own economy.",
+    "Pick real tokenized stocks, set the weights, forge one token. Every Alloy is backed one-for-one by the stocks in its vault, redeemable at any time, and never custodied by us.",
   seoDescription:
-    "One body, 999 equal parcels. Every parcel of the Moon has its own token and its own holders.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://dustland.example",
-  x: process.env.NEXT_PUBLIC_DUSTLAND_X ?? null,
-  discord: process.env.NEXT_PUBLIC_DUSTLAND_DISCORD ?? null,
+    "Forge a basket of tokenized stocks into a single token anyone can buy with one signature. Backed one-for-one, redeemable any time, non-custodial.",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://alloy.example",
+  x: envOrNull(process.env.NEXT_PUBLIC_ALLOY_X),
+  discord: envOrNull(process.env.NEXT_PUBLIC_ALLOY_DISCORD),
+  docs: envOrNull(process.env.NEXT_PUBLIC_ALLOY_DOCS),
 } as const;
 
 function envOrNull(value: string | undefined): string | null {
-  return value && value.trim().length > 0 ? value : null;
+  return value && value.trim().length > 0 ? value.trim() : null;
 }
 
-function envInt(value: string | undefined, fallback: number): number {
-  const parsed = Number.parseInt(value ?? "", 10);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
-}
-
-export const world = {
-  totalParcels: 999,
-  /**
-   * Claims shown before a contract exists. Ignored the moment
-   * NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS is set — from then on the map is
-   * drawn from the chain's own claim bitmap.
-   */
-  placeholderClaims: envInt(process.env.NEXT_PUBLIC_DUSTLAND_PLACEHOLDER_CLAIMS, 3),
-  maxPerWallet: envInt(process.env.NEXT_PUBLIC_DUSTLAND_MAX_PER_WALLET, 5),
+/** Hard limits the builder enforces. Mirrors what the factory contract checks. */
+export const limits = {
+  minAssets: 2,
+  maxAssets: 20,
+  /** Entry fee taken on every mint, kept by the creator (minus protocol cut). */
+  maxEntryFeeBps: 300,
+  /** Annualised management fee streamed from the vault to the creator. */
+  maxManagementFeeBps: 200,
+  /** Protocol share of every fee the creator earns, in basis points. */
+  protocolFeeShareBps: 1000,
+  /** Minimum seed at creation, in USDG. */
+  minSeedUsd: 100,
+  tickerMin: 3,
+  tickerMax: 6,
 } as const;
 
 /**
- * Claim surface. The address and price are env-driven so no placeholder
- * address or invented price can ship hardcoded; with the address unset the
- * whole claim UI sits in PREVIEW and the button is disabled.
+ * The contracts. Both addresses are env-driven so no placeholder can ship
+ * hardcoded; with the factory unset the whole site runs on preview data
+ * and every write button is disabled and says why.
  */
-export const claimConfig = {
-  contractAddress: envOrNull(
-    process.env.NEXT_PUBLIC_DUSTLAND_CONTRACT_ADDRESS,
-  ) as `0x${string}` | null,
-  /** Price per parcel in ETH as a decimal string, e.g. "0.04". */
-  priceEth: envOrNull(process.env.NEXT_PUBLIC_DUSTLAND_PRICE_ETH),
-  isLive: process.env.NEXT_PUBLIC_DUSTLAND_LIVE === "true",
+export const contracts = {
+  factory: envOrNull(process.env.NEXT_PUBLIC_ALLOY_FACTORY_ADDRESS) as
+    | `0x${string}`
+    | null,
+  usdg: envOrNull(process.env.NEXT_PUBLIC_ALLOY_USDG_ADDRESS) as
+    | `0x${string}`
+    | null,
+  isLive: process.env.NEXT_PUBLIC_ALLOY_LIVE === "true",
 } as const;
 
-export const canClaim =
-  claimConfig.isLive &&
-  claimConfig.contractAddress !== null &&
-  claimConfig.priceEth !== null;
+export const isLive =
+  contracts.isLive && contracts.factory !== null && contracts.usdg !== null;
