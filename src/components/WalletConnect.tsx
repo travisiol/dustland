@@ -1,0 +1,117 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useConnect, useConnection, useDisconnect, useSwitchChain } from "wagmi";
+import { clsx } from "clsx";
+import { robinhoodChain } from "@/lib/chain";
+import { shortAddress } from "@/lib/format";
+
+/**
+ * Whether a wallet is actually reachable in this browser.
+ *
+ * wagmi always registers the injected connector whether or not anything is
+ * there to inject, so its presence says nothing. This looks for a real
+ * provider instead: `window.ethereum` for older wallets and the EIP-6963
+ * announcement that current ones use. Starts optimistic so the server
+ * render and the first client render agree, then corrects itself.
+ */
+function useWalletAvailable(): boolean {
+  const [available, setAvailable] = useState(true);
+
+  useEffect(() => {
+    let found = typeof window !== "undefined" && "ethereum" in window;
+    const onAnnounce = () => {
+      found = true;
+      setAvailable(true);
+    };
+    window.addEventListener("eip6963:announceProvider", onAnnounce);
+    window.dispatchEvent(new Event("eip6963:requestProvider"));
+    const timer = window.setTimeout(() => setAvailable(found), 400);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("eip6963:announceProvider", onAnnounce);
+    };
+  }, []);
+
+  return available;
+}
+
+export function WalletConnect({
+  className,
+  wrapperClassName,
+  hint = true,
+}: {
+  className?: string;
+  wrapperClassName?: string;
+  /** Show the "install a wallet" line under the button. Off in the header, where there is no room. */
+  hint?: boolean;
+}) {
+  const { address, isConnected, chainId } = useConnection();
+  const { connect, connectors, isPending: isConnecting, error: connectError } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { mutate: switchChain, isPending: isSwitching } = useSwitchChain();
+  const walletAvailable = useWalletAvailable();
+
+  const shell = "type-label px-3.5 py-2.5 transition-colors duration-150";
+
+  if (isConnected && address) {
+    if (chainId !== robinhoodChain.id) {
+      return (
+        <button
+          type="button"
+          onClick={() => switchChain({ chainId: robinhoodChain.id })}
+          disabled={isSwitching}
+          className={clsx(shell, "bg-seal text-paper hover:bg-seal-deep", className)}
+        >
+          {isSwitching ? "Switching…" : "Switch to Robinhood Chain"}
+        </button>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => disconnect()}
+        title="Disconnect wallet"
+        className={clsx(
+          shell,
+          "flex items-center gap-2 text-ink ring-1 ring-rule-strong ring-inset hover:bg-ink hover:text-paper",
+          className,
+        )}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-up" />
+        {shortAddress(address)}
+      </button>
+    );
+  }
+
+  const connector = connectors[0];
+  const canConnect = walletAvailable && !!connector;
+
+  return (
+    <span className={clsx("inline-flex flex-col items-start gap-1", wrapperClassName)}>
+      <button
+        type="button"
+        disabled={!canConnect || isConnecting}
+        onClick={() => connector && connect({ connector })}
+        title={canConnect ? undefined : "No browser wallet detected on this device"}
+        className={clsx(
+          shell,
+          "bg-ink text-paper hover:bg-ink-soft disabled:cursor-not-allowed disabled:bg-transparent disabled:text-ink-muted disabled:ring-1 disabled:ring-rule-strong disabled:ring-inset",
+          className,
+        )}
+      >
+        {isConnecting ? "Connecting…" : canConnect ? "Connect wallet" : "No wallet found"}
+      </button>
+      {connectError && (
+        <span className="type-small max-w-[240px] text-down">
+          {connectError.message.split("\n")[0]}
+        </span>
+      )}
+      {hint && !canConnect && !connectError && (
+        <span className="type-small max-w-[240px] text-ink-muted">
+          Install a browser wallet to connect.
+        </span>
+      )}
+    </span>
+  );
+}
